@@ -1,0 +1,105 @@
+---
+title: container build
+description: Build an OCI image from a local build context
+---
+
+Builds an OCI image from a local build context. It reads a Dockerfile (default `Dockerfile`) or Containerfile and produces an image tagged with `-t` option. The build runs in isolation using BuildKit, and resource limits may be set for the build process itself.
+
+When no `-f/--file` is specified, the build command will look for `Dockerfile` first, then fall back to `Containerfile` if `Dockerfile` is not found.
+
+## Usage
+
+```bash
+container build [<options>] [<context-dir>]
+```
+
+## Arguments
+
+<ParamField path="context-dir" type="string" default=".">
+  Build directory
+</ParamField>
+
+## Options
+
+<ParamField path="-a, --arch" type="string">
+  Add the architecture type to the build
+</ParamField>
+
+<ParamField path="--build-arg" type="string">
+  Set build-time variables (format: key=val)
+</ParamField>
+
+<ParamField path="-c, --cpus" type="number" default="2">
+  Number of CPUs to allocate to the builder container
+</ParamField>
+
+<ParamField path="-f, --file" type="string">
+  Path to Dockerfile
+</ParamField>
+
+<ParamField path="-l, --label" type="string">
+  Set a label (format: key=val)
+</ParamField>
+
+<ParamField path="-m, --memory" type="string" default="2048MB">
+  Amount of builder container memory (1MiByte granularity), with optional K, M, G, T, or P suffix
+</ParamField>
+
+<ParamField path="--no-cache" type="boolean">
+  Do not use cache
+</ParamField>
+
+<ParamField path="-o, --output" type="string" default="type=oci">
+  Output configuration for the build (format: `type=<oci|tar|local>[,dest=]`)
+</ParamField>
+
+<ParamField path="--os" type="string">
+  Add the OS type to the build
+</ParamField>
+
+<ParamField path="--platform" type="string">
+  Add the platform to the build (format: os/arch[/variant], takes precedence over --os and --arch)
+</ParamField>
+
+<ParamField path="--progress" type="string" default="auto">
+  Progress type (format: auto|plain|tty)
+</ParamField>
+
+<ParamField path="--pull" type="boolean">
+  Pull latest image
+</ParamField>
+
+<ParamField path="-q, --quiet" type="boolean">
+  Suppress build output
+</ParamField>
+
+<ParamField path="-t, --tag" type="string">
+  Name for the built image (can be specified multiple times)
+</ParamField>
+
+<ParamField path="--target" type="string">
+  Set the target build stage
+</ParamField>
+
+<ParamField path="--vsock-port" type="number" default="8088">
+  Builder shim vsock port
+</ParamField>
+
+## Examples
+
+```bash
+# build an image and tag it as my-app:latest
+container build -t my-app:latest .
+
+# use a custom Dockerfile
+container build -f docker/Dockerfile.prod -t my-app:prod .
+
+# pass build args
+container build --build-arg NODE_VERSION=18 -t my-app .
+
+# build the production stage only and disable cache
+container build --target production --no-cache -t my-app:prod .
+
+# build with multiple tags
+container build -t my-app:latest -t my-app:v1.0.0 -t my-app:stable .
+```

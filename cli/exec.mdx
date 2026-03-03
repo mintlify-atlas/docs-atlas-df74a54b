@@ -1,0 +1,62 @@
+---
+title: container exec
+description: Execute a command inside a running container
+---
+
+Executes a command inside a running container. It uses the same process flags as `container run` to control environment, user, and TTY settings.
+
+## Usage
+
+```bash
+container exec [--detach] [--env <env> ...] [--env-file <env-file> ...] [--gid <gid>] [--interactive] [--tty] [--user <user>] [--uid <uid>] [--workdir <dir>] [--debug] <container-id> <arguments> ...
+```
+
+## Arguments
+
+<ParamField path="container-id" type="string" required>
+  Container ID
+</ParamField>
+
+<ParamField path="arguments" type="string[]" required>
+  New process arguments
+</ParamField>
+
+## Options
+
+<ParamField path="-d, --detach" type="boolean">
+  Run the process and detach from it
+</ParamField>
+
+## Process options
+
+<ParamField path="-e, --env" type="string">
+  Set environment variables (format: key=value)
+</ParamField>
+
+<ParamField path="--env-file" type="string">
+  Read in a file of environment variables (key=value format, ignores # comments and blank lines)
+</ParamField>
+
+<ParamField path="--gid" type="number">
+  Set the group ID for the process
+</ParamField>
+
+<ParamField path="-i, --interactive" type="boolean">
+  Keep the standard input open even if not attached
+</ParamField>
+
+<ParamField path="-t, --tty" type="boolean">
+  Open a TTY with the process
+</ParamField>
+
+<ParamField path="-u, --user" type="string">
+  Set the user for the process (format: name|uid[:gid])
+</ParamField>
+
+<ParamField path="--uid" type="number">
+  Set the user ID for the process
+</ParamField>
+
+<ParamField path="-w, --workdir, --cwd" type="string">
+  Set the initial working directory inside the container
+</ParamField>

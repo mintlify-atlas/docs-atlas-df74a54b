@@ -1,0 +1,34 @@
+---
+title: container network create
+description: Create a new network
+---
+
+Creates a new network with the given name.
+
+<Note>Network commands are available on macOS 26 and later.</Note>
+
+## Usage
+
+```bash
+container network create [--label <label> ...] [--subnet <subnet>] [--subnet-v6 <subnet-v6>] [--debug] <name>
+```
+
+## Arguments
+
+<ParamField path="name" type="string" required>
+  Network name
+</ParamField>
+
+## Options
+
+<ParamField path="--label" type="string">
+  Set metadata for a network (format: key=value)
+</ParamField>
+
+<ParamField path="--subnet" type="string">
+  Set the IPv4 subnet for a network (CIDR format, e.g., 192.168.100.0/24)
+</ParamField>
+
+<ParamField path="--subnet-v6" type="string">
+  Set the IPv6 prefix for a network (CIDR format, e.g., fd00:1234::/64)
+</ParamField>

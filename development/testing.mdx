@@ -1,0 +1,126 @@
+---
+title: Testing
+description: Running tests and integration tests for container
+---
+
+## Running tests
+
+The `container` project includes both basic unit tests and integration tests to ensure functionality and reliability.
+
+## Basic tests
+
+To run the basic test suite:
+
+```bash
+make test
+```
+
+This runs the standard unit tests for the project.
+
+## Integration tests
+
+Integration tests verify that all components work together correctly:
+
+```bash
+make integration
+```
+
+<Info>
+  Integration tests may take longer to run as they test real container operations, including VM creation and network setup.
+</Info>
+
+## Running all tests
+
+To build the project and run all tests in sequence:
+
+```bash
+make all test integration
+```
+
+This command:
+
+<Steps>
+  <Step title="Builds the project">
+    Compiles all binaries and helper services
+  </Step>
+  
+  <Step title="Runs unit tests">
+    Executes the basic test suite
+  </Step>
+  
+  <Step title="Runs integration tests">
+    Executes the integration test suite
+  </Step>
+</Steps>
+
+## Testing release builds
+
+To test a release build configuration:
+
+```bash
+BUILD_CONFIGURATION=release make all test integration
+```
+
+<Note>
+  Testing release builds is important to catch optimization-related issues that may not appear in debug builds.
+</Note>
+
+## Test requirements
+
+Before running tests, ensure you have:
+
+- Mac with Apple silicon
+- macOS 15 minimum, macOS 26 recommended
+- Xcode 26 installed and set as the active developer directory
+- Container services stopped (if running)
+
+<Warning>
+  Some tests may require elevated privileges or specific network configurations. Make sure you have administrator access when needed.
+</Warning>
+
+## Continuous testing during development
+
+When actively developing, you can run tests frequently:
+
+```bash
+# Make changes to code
+make clean all test
+```
+
+This ensures your changes don't break existing functionality.
+
+## Testing with local dependencies
+
+When testing changes to the Containerization package:
+
+<Steps>
+  <Step title="Configure local dependency">
+    Set up the local containerization dependency as described in the [building guide](/development/building).
+  </Step>
+  
+  <Step title="Build and test">
+    Run the full build and test suite:
+    
+    ```bash
+    make clean all test integration
+    ```
+  </Step>
+  
+  <Step title="Verify changes">
+    Ensure that your changes in both projects work correctly together.
+  </Step>
+</Steps>
+
+## Debugging test failures
+
+If tests fail:
+
+1. **Check the error output** - Test failures include detailed error messages
+2. **Verify requirements** - Ensure all build requirements are met
+3. **Check services** - Make sure no container services are running that might interfere
+4. **Review recent changes** - Consider what code changes might have caused the failure
+5. **Run individually** - Try running `make test` and `make integration` separately to isolate the issue
+
+<Info>
+  For more advanced debugging, see the [debugging guide](/development/debugging) for information on attaching debuggers to XPC helpers.
+</Info>

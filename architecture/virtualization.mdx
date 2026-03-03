@@ -1,0 +1,121 @@
+---
+title: Virtualization
+description: How container uses per-container VMs for security and isolation
+---
+
+## Per-container virtual machines
+
+`container` uses a unique approach to running containers on macOS. Instead of running all containers in a single shared Linux VM, it creates a lightweight virtual machine for each individual container.
+
+This per-container virtualization model is powered by the open source [Containerization](https://github.com/apple/containerization) package and provides distinct advantages in security, privacy, and resource management.
+
+## Virtualization framework integration
+
+`container` integrates deeply with macOS frameworks to deliver efficient containerization:
+
+### Virtualization framework
+
+The Virtualization framework manages Linux virtual machines and their attached devices. Each container runs in its own VM with:
+
+- Minimal Linux kernel and utilities
+- Reduced attack surface
+- Full VM isolation properties
+- Efficient resource allocation
+
+<Note>
+  The Virtualization framework in macOS 26 includes enhancements that improve container performance and networking capabilities.
+</Note>
+
+### vmnet framework
+
+The vmnet framework manages the virtual network to which containers attach:
+
+- Provides network connectivity between containers and the host
+- Enables container-to-container communication (macOS 26)
+- Manages IP address allocation
+- Supports custom network configurations
+
+<Warning>
+  On macOS 15, the vmnet framework only supports isolated networks where containers cannot communicate with each other. Container-to-container communication requires macOS 26.
+</Warning>
+
+## Security benefits
+
+The per-container VM approach provides strong security isolation:
+
+**VM-level isolation**
+
+Each container has the isolation properties of a full virtual machine, preventing container escape vulnerabilities that can affect shared-VM architectures.
+
+**Minimal attack surface**
+
+Containers use a minimal set of core utilities and dynamic libraries, reducing the attack surface compared to traditional approaches.
+
+**Process isolation**
+
+Containerized applications run in completely separate Linux kernels, ensuring robust process-level isolation.
+
+## Privacy advantages
+
+The architecture provides enhanced privacy controls:
+
+**Selective data mounting**
+
+You mount only the necessary data into each VM. This is different from shared VM approaches where all potentially needed data must be mounted into a single VM and then selectively shared with containers.
+
+**Per-container filesystem**
+
+Each container has its own filesystem, preventing data leakage between containers at the VM level.
+
+## Performance characteristics
+
+`container` is designed to deliver performance comparable to traditional container approaches:
+
+### Memory efficiency
+
+Containers created using `container` require less memory than full VMs:
+
+- Only allocate memory actually used by the application
+- Minimal overhead for VM management
+- Efficient memory utilization across multiple containers
+
+### Boot time
+
+Boot times are comparable to containers running in a shared VM, thanks to:
+
+- Lightweight Linux kernel
+- Minimal init system
+- Optimized VM startup process
+
+### Resource allocation
+
+Each VM dynamically uses only the amount of memory that the containerized application needs. For example, you might start a container with `--memory 16g`, but the application may only use 2 GB of RAM in Activity Monitor.
+
+<Info>
+  The lightweight nature of these VMs means you can run multiple containers efficiently on a single Mac.
+</Info>
+
+## Memory management limitations
+
+The macOS Virtualization framework implements only partial support for memory ballooning, which is a technology that allows virtual machines to dynamically use and relinquish host memory.
+
+### Current behavior
+
+When you create a container, the underlying virtual machine only uses the amount of memory that the containerized application needs. However, memory pages freed by processes running in the container's VM are not currently relinquished to the host.
+
+<Warning>
+  If you run many memory-intensive containers, you may need to occasionally restart them to reduce memory utilization and release memory back to macOS.
+</Warning>
+
+## OCI compatibility
+
+Despite the unique virtualization approach, `container` maintains full OCI (Open Container Initiative) compatibility:
+
+- Consumes and produces standard OCI images
+- Works with any OCI container registry
+- Images built with `container` run anywhere
+- Can run images from Docker Hub, GitHub Container Registry, and other registries
+
+<Note>
+  The per-container VM architecture is transparent to containerized applications, ensuring complete compatibility with existing container images.
+</Note>

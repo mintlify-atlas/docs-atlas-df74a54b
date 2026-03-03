@@ -1,0 +1,34 @@
+---
+title: container system start
+description: Start the container services
+---
+
+Starts the container services and (optionally) installs a default kernel. It will start the `container-apiserver` and background services.
+
+## Usage
+
+```bash
+container system start [--app-root <app-root>] [--install-root <install-root>] [--log-root <log-root>] [--enable-kernel-install] [--disable-kernel-install] [--debug]
+```
+
+## Options
+
+<ParamField path="-a, --app-root" type="string">
+  Path to the root directory for application data
+</ParamField>
+
+<ParamField path="--install-root" type="string">
+  Path to the root directory for application executables and plugins
+</ParamField>
+
+<ParamField path="--log-root" type="string">
+  Path to the root directory for log data, using macOS log facility if not set
+</ParamField>
+
+<ParamField path="--enable-kernel-install" type="boolean">
+  Enable installation of the default kernel (default: prompt user)
+</ParamField>
+
+<ParamField path="--disable-kernel-install" type="boolean">
+  Disable installation of the default kernel (default: prompt user)
+</ParamField>

@@ -1,0 +1,261 @@
+---
+title: Debugging
+description: How to debug XPC helpers and get development tips
+---
+
+## Debugging XPC helpers
+
+The `container` system uses XPC helpers for various services. You can attach a debugger to these helpers to troubleshoot issues or understand their behavior.
+
+## Finding service labels
+
+First, identify the launchd service labels for the XPC helpers you want to debug:
+
+<Steps>
+  <Step title="Start container services">
+    Start the container system:
+    
+    ```bash
+    container system start
+    ```
+  </Step>
+  
+  <Step title="Create a test container">
+    Run a container to ensure all services are active:
+    
+    ```bash
+    container run -d --name test debian:bookworm sleep infinity
+    ```
+  </Step>
+  
+  <Step title="List container services">
+    Use launchctl to find the service labels:
+    
+    ```bash
+    launchctl list | grep container
+    ```
+    
+    Example output:
+    ```console
+    27068   0       com.apple.container.container-network-vmnet.default
+    27072   0       com.apple.container.container-core-images
+    26980   0       com.apple.container.apiserver
+    27331   0       com.apple.container.container-runtime-linux.test
+    ```
+  </Step>
+</Steps>
+
+## Attaching the debugger
+
+To debug a specific XPC helper, use the `CONTAINER_DEBUG_LAUNCHD_LABEL` environment variable:
+
+### Debug a specific service
+
+To debug a single service by its exact label:
+
+```bash
+export CONTAINER_DEBUG_LAUNCHD_LABEL=com.apple.container.container-runtime-linux.test
+container system start
+```
+
+Only the service `com.apple.container.container-runtime-linux.test` will wait for the debugger to attach.
+
+### Debug multiple services by prefix
+
+To debug all services matching a label prefix:
+
+```bash
+export CONTAINER_DEBUG_LAUNCHD_LABEL=com.apple.container.container-runtime-linux
+container system start
+```
+
+Every service starting with `com.apple.container.container-runtime-linux` will wait for the debugger.
+
+<Note>
+  Services configured to wait for a debugger will pause at startup until you attach a debugger to them.
+</Note>
+
+## Debugging workflow
+
+Here's the complete workflow for debugging an XPC helper:
+
+<Steps>
+  <Step title="Stop existing services">
+    If container services are running, stop them:
+    
+    ```bash
+    container system stop
+    ```
+  </Step>
+  
+  <Step title="Set debug environment variable">
+    Configure which service(s) to debug:
+    
+    ```bash
+    export CONTAINER_DEBUG_LAUNCHD_LABEL=com.apple.container.container-runtime-linux.test
+    ```
+  </Step>
+  
+  <Step title="Start services">
+    Start the container system with the debug configuration:
+    
+    ```bash
+    container system start
+    ```
+  </Step>
+  
+  <Step title="Trigger service launch">
+    Run the command that will launch the service you want to debug. For a runtime helper:
+    
+    ```bash
+    container run -it --name test debian:bookworm
+    ```
+    
+    The command will appear to hang:
+    ```
+    ⠧ [6/6] Starting container [0s]
+    ```
+    
+    This is expected - the service is waiting for the debugger.
+  </Step>
+  
+  <Step title="Attach debugger">
+    In Xcode or your debugger of choice, attach to the waiting process. The process will resume once the debugger is attached.
+  </Step>
+  
+  <Step title="Debug as needed">
+    Set breakpoints, step through code, and inspect variables as you would with any other debugging session.
+  </Step>
+</Steps>
+
+## Common debugging scenarios
+
+### Debugging the runtime helper
+
+To debug container startup and execution:
+
+```bash
+export CONTAINER_DEBUG_LAUNCHD_LABEL=com.apple.container.container-runtime-linux
+container system start
+container run -it --name mycontainer debian:bookworm bash
+```
+
+### Debugging the network helper
+
+To debug network configuration:
+
+```bash
+export CONTAINER_DEBUG_LAUNCHD_LABEL=com.apple.container.container-network-vmnet
+container system start
+container network create mynetwork
+```
+
+### Debugging the image helper
+
+To debug image operations:
+
+```bash
+export CONTAINER_DEBUG_LAUNCHD_LABEL=com.apple.container.container-core-images
+container system start
+container pull debian:bookworm
+```
+
+### Debugging the API server
+
+To debug the main API server:
+
+```bash
+export CONTAINER_DEBUG_LAUNCHD_LABEL=com.apple.container.apiserver
+container system start
+```
+
+<Warning>
+  When debugging the API server, almost any container command will trigger the wait state since the server handles all requests.
+</Warning>
+
+## Development tips
+
+### Using the pre-commit hook
+
+Install the pre-commit hook to ensure your changes have correct formatting and license headers:
+
+```bash
+make pre-commit
+```
+
+This installs a hook that runs automatically when you use `git commit`.
+
+<Info>
+  The pre-commit hook helps maintain code quality and consistency across the project.
+</Info>
+
+### Project location considerations
+
+Due to a vmnet framework bug, avoid placing your project under `~/Documents` or `~/Desktop`:
+
+```bash
+# Good locations
+~/projects/container
+~/Development/container
+~/code/container
+
+# Problematic locations (vmnet bug)
+~/Documents/container
+~/Desktop/container
+```
+
+<Note>
+  If you use `make install`, this limitation doesn't apply since the binaries are installed to `/usr/local`.
+</Note>
+
+### Cleaning build artifacts
+
+When switching between debug and release builds, or after major changes:
+
+```bash
+make clean all
+```
+
+This ensures a fresh build without cached artifacts.
+
+### Using local dependencies
+
+When working on features that span multiple repositories:
+
+1. Clone related repositories (Containerization, container-builder-shim) alongside your container clone
+2. Use `swift package edit` to link to local copies
+3. Make changes across repositories
+4. Test thoroughly with `make test integration`
+5. Revert to normal dependencies before committing
+
+See the [building guide](/development/building) for detailed instructions.
+
+### Debugging with logging
+
+Container services use the macOS unified logging system. View logs using:
+
+```bash
+# View all container logs
+log stream --predicate 'subsystem CONTAINS "container"'
+
+# View logs for a specific process
+log stream --predicate 'processImagePath CONTAINS "container-runtime"'
+```
+
+You can also use Console.app for a graphical log viewer.
+
+<Info>
+  Structured logging provides valuable context for debugging without requiring a debugger attachment.
+</Info>
+
+### Testing with different macOS versions
+
+While macOS 26 is recommended, you may need to test on macOS 15:
+
+- Be aware of vmnet limitations (no container-to-container networking)
+- Network configuration may require manual adjustment
+- Some features may not be available
+
+<Warning>
+  Issues that only reproduce on macOS 15 may not be addressed if they work correctly on macOS 26.
+</Warning>

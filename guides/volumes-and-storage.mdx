@@ -1,0 +1,436 @@
+---
+title: Volumes and storage
+description: Learn how to share host files, manage volumes, and configure persistent storage for containers
+---
+
+This guide covers storage options for containers including bind mounts, volumes, tmpfs mounts, and managing persistent data.
+
+## Understanding storage types
+
+Container provides three main types of storage:
+
+- **Bind mounts**: Share a specific host directory or file with a container
+- **Volumes**: Managed storage that persists independently of containers
+- **Tmpfs mounts**: Temporary in-memory storage
+
+## Bind mounts
+
+Bind mounts allow you to share data between the host system and containers by mounting a host directory or file into the container.
+
+### Using --volume flag
+
+The `--volume` (or `-v`) option uses the format `host-path:container-path`:
+
+```bash
+container run --volume ${HOME}/Desktop/assets:/content/assets docker.io/python:alpine ls -l /content/assets
+```
+
+Example output:
+```
+total 4
+-rw-r--r-- 1 root root 2410 May 14 01:36 link.svg
+```
+
+<Info>
+The argument to `--volume` consists of the full pathname for the host folder and the full pathname for the mount point in the container, separated by a colon.
+</Info>
+
+### Using --mount flag
+
+The `--mount` option uses a comma-separated `key=value` syntax:
+
+```bash
+container run --mount source=${HOME}/Desktop/assets,target=/content/assets docker.io/python:alpine ls -l /content/assets
+```
+
+<Tabs>
+  <Tab title="--volume syntax">
+    **Format**: `host-path:container-path[:options]`
+
+    ```bash
+    # Read-write mount (default)
+    -v /host/path:/container/path
+
+    # Read-only mount
+    -v /host/path:/container/path:ro
+    ```
+
+    **Pros**:
+    - Shorter, more concise syntax
+    - Familiar to Docker users
+
+    **Cons**:
+    - Less explicit about mount type
+    - Limited options compared to --mount
+  </Tab>
+
+  <Tab title="--mount syntax">
+    **Format**: `type=bind,source=host-path,target=container-path[,options]`
+
+    ```bash
+    # Read-write mount
+    --mount type=bind,source=/host/path,target=/container/path
+
+    # Read-only mount
+    --mount type=bind,source=/host/path,target=/container/path,readonly
+    ```
+
+    **Pros**:
+    - More explicit and self-documenting
+    - Easier to parse programmatically
+    - Supports additional options
+
+    **Cons**:
+    - More verbose
+  </Tab>
+</Tabs>
+
+### Common bind mount patterns
+
+<Steps>
+  <Step title="Mounting source code for development">
+    ```bash
+    container run -it --rm \
+      --volume $(pwd):/app \
+      --workdir /app \
+      node:18 npm install
+    ```
+
+    This mounts your current directory into `/app` and sets it as the working directory.
+  </Step>
+
+  <Step title="Mounting configuration files">
+    ```bash
+    container run -d \
+      --name nginx \
+      --volume ${HOME}/nginx.conf:/etc/nginx/nginx.conf:ro \
+      nginx:latest
+    ```
+
+    The `:ro` suffix makes the mount read-only.
+  </Step>
+
+  <Step title="Mounting multiple directories">
+    ```bash
+    container run -d \
+      --volume ${HOME}/data:/data \
+      --volume ${HOME}/config:/config \
+      --volume ${HOME}/logs:/var/log \
+      my-app:latest
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+Bind mounts reflect changes immediately. Modifying files on the host will affect the container and vice versa.
+</Warning>
+
+## Named volumes
+
+Volumes are managed by the container runtime and persist independently of containers. They are the preferred mechanism for persisting data.
+
+### Creating volumes
+
+Create a named volume explicitly:
+
+```bash
+container volume create my-data
+```
+
+With custom options:
+
+```bash
+container volume create my-data \
+  --label project=myapp \
+  --label environment=production \
+  -s 10G
+```
+
+<Note>
+The `-s` option sets the volume size in bytes, with optional K, M, G, T, or P suffix.
+</Note>
+
+### Using volumes
+
+Mount a volume into a container:
+
+```bash
+# Using --volume
+container run -d --name app --volume my-data:/data alpine:latest
+
+# Using --mount
+container run -d --name app --mount type=volume,source=my-data,target=/data alpine:latest
+```
+
+### Anonymous volumes
+
+Anonymous volumes are auto-created when using `-v /path` without specifying a source:
+
+```bash
+# Creates anonymous volume
+container run -v /data alpine
+```
+
+Anonymous volumes use UUID-based naming: `anon-{36-char-uuid}`
+
+To reuse an anonymous volume:
+
+```bash
+# List volumes to find the anonymous volume ID
+VOL=$(container volume list -q | grep anon)
+
+# Reuse it
+container run -v $VOL:/data alpine
+```
+
+<Warning>
+Unlike Docker, anonymous volumes do NOT auto-cleanup with `--rm`. Manual deletion is required.
+</Warning>
+
+### Listing volumes
+
+```bash
+container volume list
+```
+
+Output formats:
+
+<Tabs>
+  <Tab title="Table format">
+    ```bash
+    container volume list --format table
+    ```
+  </Tab>
+
+  <Tab title="JSON format">
+    ```bash
+    container volume list --format json
+    ```
+  </Tab>
+
+  <Tab title="Quiet mode">
+    ```bash
+    container volume list --quiet
+    ```
+
+    Only outputs volume names, one per line.
+  </Tab>
+</Tabs>
+
+### Inspecting volumes
+
+```bash
+container volume inspect my-data
+```
+
+Displays detailed information in JSON format.
+
+### Deleting volumes
+
+Delete a specific volume:
+
+```bash
+container volume delete my-data
+```
+
+Delete multiple volumes:
+
+```bash
+container volume delete vol1 vol2 vol3
+```
+
+<Warning>
+Volumes that are currently in use by containers (running or stopped) cannot be deleted.
+</Warning>
+
+### Pruning volumes
+
+Remove all volumes that have no container references:
+
+```bash
+container volume prune
+```
+
+The command reports the actual disk space reclaimed after deletion.
+
+<Info>
+This includes volumes not attached to any running or stopped containers.
+</Info>
+
+## Tmpfs mounts
+
+Tmpfs mounts create temporary in-memory storage that is fast but ephemeral.
+
+### Creating tmpfs mounts
+
+```bash
+container run -d --name app --tmpfs /tmp alpine:latest
+```
+
+Multiple tmpfs mounts:
+
+```bash
+container run -d \
+  --tmpfs /tmp \
+  --tmpfs /var/cache \
+  --tmpfs /run \
+  alpine:latest
+```
+
+<Note>
+Data in tmpfs mounts is stored in memory and is lost when the container stops.
+</Note>
+
+### Use cases for tmpfs
+
+- Temporary caches
+- Sensitive data that shouldn't persist
+- Fast temporary file operations
+- Build artifacts that don't need to persist
+
+## Storage patterns and best practices
+
+### Development workflow
+
+Mount source code for live development:
+
+```bash
+container run -it --rm \
+  --name dev \
+  --volume $(pwd):/workspace \
+  --workdir /workspace \
+  node:18 bash
+```
+
+### Database persistence
+
+Use named volumes for database data:
+
+```bash
+# Create a volume for database data
+container volume create postgres-data
+
+# Run PostgreSQL with persistent storage
+container run -d \
+  --name postgres \
+  --volume postgres-data:/var/lib/postgresql/data \
+  -e POSTGRES_PASSWORD=secret \
+  postgres:15
+```
+
+### Configuration management
+
+Mount configuration files as read-only:
+
+```bash
+container run -d \
+  --name app \
+  --volume ${HOME}/app-config:/etc/app:ro \
+  my-app:latest
+```
+
+### Sharing data between containers
+
+Multiple containers can share the same volume:
+
+```bash
+# Create a shared volume
+container volume create shared-data
+
+# First container writes data
+container run -d --name writer --volume shared-data:/data writer-app:latest
+
+# Second container reads data
+container run -d --name reader --volume shared-data:/data:ro reader-app:latest
+```
+
+<Info>
+Use read-only mounts (`:ro`) when containers only need to read data to prevent accidental modifications.
+</Info>
+
+### Log collection
+
+Mount a host directory for log collection:
+
+```bash
+mkdir -p ${HOME}/app-logs
+
+container run -d \
+  --name app \
+  --volume ${HOME}/app-logs:/var/log/app \
+  my-app:latest
+```
+
+Logs are now accessible on the host for analysis or archival.
+
+## Read-only root filesystem
+
+Mount the container's root filesystem as read-only for security:
+
+```bash
+container run -d --read-only --tmpfs /tmp --tmpfs /var/run my-app:latest
+```
+
+<Info>
+Combine `--read-only` with `--tmpfs` for directories that need write access. This pattern is useful for security-conscious deployments.
+</Info>
+
+## Backup and restore
+
+### Backing up volumes
+
+```bash
+# Run a temporary container to backup the volume
+container run --rm \
+  --volume my-data:/data \
+  --volume $(pwd):/backup \
+  alpine:latest \
+  tar czf /backup/my-data-backup.tar.gz -C /data .
+```
+
+### Restoring volumes
+
+```bash
+# Create a new volume
+container volume create my-data-restored
+
+# Restore data to the volume
+container run --rm \
+  --volume my-data-restored:/data \
+  --volume $(pwd):/backup \
+  alpine:latest \
+  tar xzf /backup/my-data-backup.tar.gz -C /data
+```
+
+## Storage troubleshooting
+
+### Check disk usage
+
+```bash
+container system df
+```
+
+Shows disk usage for images, containers, and volumes.
+
+### Permission issues
+
+If you encounter permission errors:
+
+```bash
+# Run as a specific user
+container run --user $(id -u):$(id -g) \
+  --volume $(pwd):/data \
+  alpine:latest ls -la /data
+```
+
+### Verify mount points
+
+Inspect container configuration to verify mounts:
+
+```bash
+container inspect my-container | jq '.[0].configuration.mounts'
+```
+
+<Tip>
+Use `container inspect` to verify that volumes and bind mounts are configured correctly.
+</Tip>

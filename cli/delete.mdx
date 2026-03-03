@@ -1,0 +1,30 @@
+---
+title: container delete
+description: Delete one or more containers
+---
+
+Deletes one or more containers. If the container is running, you may force deletion with `--force`. Without a container ID, nothing happens unless `--all` is supplied.
+
+## Usage
+
+```bash
+container delete [--all] [--force] [--debug] [<container-ids> ...]
+```
+
+Alias: `container rm`
+
+## Arguments
+
+<ParamField path="container-ids" type="string[]">
+  Container IDs
+</ParamField>
+
+## Options
+
+<ParamField path="-a, --all" type="boolean">
+  Delete all containers
+</ParamField>
+
+<ParamField path="-f, --force" type="boolean">
+  Delete containers even if they are running
+</ParamField>

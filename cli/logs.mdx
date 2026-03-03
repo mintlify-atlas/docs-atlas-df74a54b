@@ -1,0 +1,32 @@
+---
+title: container logs
+description: Fetch container logs
+---
+
+Fetches logs from a container. You can follow the logs (`-f`/`--follow`), restrict the number of lines shown, or view boot logs.
+
+## Usage
+
+```bash
+container logs [--boot] [--follow] [-n <n>] [--debug] <container-id>
+```
+
+## Arguments
+
+<ParamField path="container-id" type="string" required>
+  Container ID
+</ParamField>
+
+## Options
+
+<ParamField path="--boot" type="boolean">
+  Display the boot log for the container instead of stdio
+</ParamField>
+
+<ParamField path="-f, --follow" type="boolean">
+  Follow log output
+</ParamField>
+
+<ParamField path="-n" type="number">
+  Number of lines to show from the end of the logs. If not provided this will print all of the logs
+</ParamField>

@@ -1,0 +1,32 @@
+---
+title: container builder delete
+description: Delete the BuildKit builder container
+---
+
+Deletes the BuildKit builder container. It can optionally force deletion if the builder is still running.
+
+## Usage
+
+```bash
+container builder delete [--force] [--debug]
+```
+
+## Options
+
+<ParamField path="-f, --force" type="boolean">
+  Delete the builder even if it is running
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug mode
+</ParamField>
+
+## Examples
+
+```bash
+# delete the builder (fails if running)
+container builder delete
+
+# force delete the builder even if it's running
+container builder delete --force
+```

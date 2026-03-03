@@ -1,0 +1,223 @@
+---
+title: Contributing
+description: Guidelines for contributing to the container project
+---
+
+## Welcome contributors
+
+Contributions to `container` are welcomed and encouraged. Whether you're fixing bugs, adding features, improving documentation, or helping with testing, your contributions help make `container` better for everyone.
+
+## Main contributing guide
+
+For comprehensive contribution guidelines, please see the [main contributing guide](https://github.com/apple/containerization/blob/main/CONTRIBUTING.md) in the Containerization project.
+
+This guide covers:
+
+- Code of conduct
+- How to submit issues
+- Pull request process
+- Coding standards
+- License information
+- Community guidelines
+
+<Info>
+  The `container` project shares contribution guidelines with the Containerization project to maintain consistency across the ecosystem.
+</Info>
+
+## Getting started
+
+Before contributing, make sure you:
+
+<Steps>
+  <Step title="Set up your development environment">
+    Follow the [building from source](/development/building) guide to set up your development environment with all required dependencies.
+  </Step>
+  
+  <Step title="Understand the architecture">
+    Read the [architecture documentation](/architecture/overview) to understand how `container` works and how components interact.
+  </Step>
+  
+  <Step title="Run tests">
+    Verify your environment by [running the test suite](/development/testing) to ensure everything is working correctly.
+  </Step>
+  
+  <Step title="Install pre-commit hook">
+    Set up the pre-commit hook to ensure code quality:
+    
+    ```bash
+    make pre-commit
+    ```
+  </Step>
+</Steps>
+
+## Areas for contribution
+
+With the initial release of `container`, many common containerization features remain to be implemented. Consider contributing in these areas:
+
+### Feature development
+
+- New container runtime features
+- Enhanced networking capabilities
+- Additional image management features
+- Performance optimizations
+- macOS integration improvements
+
+### Bug fixes
+
+- Security vulnerabilities
+- Stability issues
+- Performance problems
+- Edge case handling
+
+### Documentation
+
+- Improving existing documentation
+- Adding examples and tutorials
+- Clarifying technical explanations
+- Documenting undocumented features
+
+### Testing
+
+- Writing new tests
+- Improving test coverage
+- Adding integration tests
+- Performance benchmarking
+
+<Note>
+  Consider [contributing](https://github.com/apple/containerization/blob/main/CONTRIBUTING.md) new features and bug fixes to both `container` and the Containerization projects.
+</Note>
+
+## Development workflow
+
+A typical contribution workflow:
+
+<Steps>
+  <Step title="Fork and clone">
+    Fork the repository and clone it to your local machine.
+  </Step>
+  
+  <Step title="Create a branch">
+    Create a feature branch for your changes:
+    
+    ```bash
+    git checkout -b feature/my-new-feature
+    ```
+  </Step>
+  
+  <Step title="Make changes">
+    Implement your changes, following the project's coding standards.
+  </Step>
+  
+  <Step title="Test thoroughly">
+    Run the full test suite:
+    
+    ```bash
+    make all test integration
+    ```
+  </Step>
+  
+  <Step title="Commit with proper formatting">
+    The pre-commit hook will ensure proper formatting and license headers:
+    
+    ```bash
+    git commit -m "Add new feature"
+    ```
+  </Step>
+  
+  <Step title="Push and create PR">
+    Push your branch and create a pull request with a clear description of your changes.
+  </Step>
+</Steps>
+
+## Code quality standards
+
+### Formatting
+
+The pre-commit hook automatically checks:
+
+- Code formatting
+- License headers
+- Basic style issues
+
+Install it with:
+
+```bash
+make pre-commit
+```
+
+### Testing requirements
+
+All contributions should:
+
+- Include appropriate tests
+- Pass existing tests
+- Maintain or improve code coverage
+- Pass integration tests
+
+<Warning>
+  Pull requests that break existing tests or significantly reduce code coverage may not be accepted.
+</Warning>
+
+### Documentation requirements
+
+Code changes should include:
+
+- Updated API documentation
+- Comments for complex logic
+- Updates to relevant documentation pages
+- Examples where appropriate
+
+## Building with local dependencies
+
+If your contribution requires changes to related projects:
+
+### Containerization changes
+
+See the [building guide](/development/building) for instructions on linking to a local Containerization repository.
+
+### Builder changes
+
+See the [building guide](/development/building) for instructions on testing builder changes.
+
+## Debugging your changes
+
+Use the [debugging guide](/development/debugging) to:
+
+- Attach debuggers to XPC helpers
+- Debug service initialization
+- Troubleshoot integration issues
+- Analyze runtime behavior
+
+<Info>
+  The `CONTAINER_DEBUG_LAUNCHD_LABEL` environment variable is invaluable for debugging service-level changes.
+</Info>
+
+## Project status
+
+The container project is currently under active development:
+
+- Stability is only guaranteed within patch versions (e.g., between 0.1.1 and 0.1.2)
+- Minor version releases may include breaking changes until 1.0.0
+- The API and architecture may evolve significantly
+
+<Note>
+  Keep this in mind when planning contributions, especially those that involve API changes or architectural modifications.
+</Note>
+
+## Getting help
+
+If you need help with your contribution:
+
+- Review the [architecture documentation](/architecture/overview)
+- Check existing issues and pull requests
+- Refer to the [main contributing guide](https://github.com/apple/containerization/blob/main/CONTRIBUTING.md)
+- Ask questions in your pull request
+
+## Related projects
+
+Contributions may involve these related projects:
+
+- [Containerization](https://github.com/apple/containerization) - Core container runtime package
+- [container-builder-shim](https://github.com/apple/container-builder-shim) - Image building support
+
+Make sure to review contribution guidelines for these projects if your changes span multiple repositories.

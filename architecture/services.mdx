@@ -1,0 +1,188 @@
+---
+title: Services
+description: Understanding the container service architecture and component organization
+---
+
+## Architecture overview
+
+You use the `container` command line interface (CLI) to start and manage your containers, build container images, and transfer images from and to OCI container registries. The CLI uses a client library that communicates with `container-apiserver` and its helpers.
+
+## Service organization
+
+`container` integrates with key macOS technologies and frameworks:
+
+- **Virtualization framework** for managing Linux virtual machines and their attached devices
+- **vmnet framework** for managing the virtual network to which the containers attach
+- **XPC** for interprocess communication
+- **Launchd** for service management
+- **Keychain services** for access to registry credentials
+- **Unified logging system** for application logging
+
+## Component architecture
+
+The `container` system consists of several components that work together:
+
+### container CLI
+
+The command-line interface that users interact with to:
+
+- Create and manage containers
+- Build container images
+- Pull and push images to registries
+- Configure networks and resources
+- Control the container system
+
+### container-apiserver
+
+The `container-apiserver` is a launch agent that provides the core API surface:
+
+- Launches when you run `container system start`
+- Terminates when you run `container system stop`
+- Provides client APIs for managing container and network resources
+- Coordinates with XPC helpers for specialized functionality
+- Manages the lifecycle of container runtime helpers
+
+<Note>
+  The apiserver acts as the central coordinator for all container operations.
+</Note>
+
+### XPC helpers
+
+When `container-apiserver` starts, it launches specialized XPC helpers:
+
+#### container-core-images
+
+- Exposes an API for image management
+- Manages the local content store
+- Handles image pulls and pushes
+- Maintains image layers and metadata
+
+#### container-network-vmnet
+
+- Manages the virtual network infrastructure
+- Allocates IP addresses to containers
+- Integrates with the vmnet framework
+- Handles network configuration and routing
+
+#### container-runtime-linux
+
+For each container that you create, `container-apiserver` launches a dedicated runtime helper:
+
+- Exposes the management API for a specific container
+- Manages the container's VM lifecycle
+- Handles container start, stop, and resource management
+- Provides process execution within the container
+
+<Info>
+  Each running container has its own `container-runtime-linux` instance, providing isolation at the service level.
+</Info>
+
+## Service management with Launchd
+
+All `container` services are managed by Launchd, the macOS service management framework:
+
+- Services are registered as launch agents
+- Automatic lifecycle management
+- Service labels follow the pattern: `com.apple.container.<service-name>`
+- Services can be inspected using `launchctl list | grep container`
+
+### Example service labels
+
+```console
+% launchctl list | grep container
+27068   0       com.apple.container.container-network-vmnet.default
+27072   0       com.apple.container.container-core-images
+26980   0       com.apple.container.apiserver
+27331   0       com.apple.container.container-runtime-linux.test
+```
+
+## Interprocess communication with XPC
+
+`container` uses XPC (Cross-Process Communication) for secure, efficient communication between components:
+
+- Type-safe message passing
+- Automatic lifecycle management
+- Security through macOS entitlements
+- Asynchronous request/response patterns
+
+### Benefits of XPC architecture
+
+**Process isolation**
+
+Each service runs in its own process, providing fault isolation and security boundaries.
+
+**Resource management**
+
+Services can be independently managed, updated, and restarted without affecting the entire system.
+
+**Security**
+
+XPC connections are secured by macOS, with access control through entitlements.
+
+## Functional model
+
+The interaction between components follows this pattern:
+
+<Steps>
+  <Step title="User invokes CLI">
+    The user runs a `container` command through the CLI.
+  </Step>
+  
+  <Step title="CLI calls apiserver">
+    The CLI communicates with `container-apiserver` via the client library.
+  </Step>
+  
+  <Step title="Apiserver coordinates helpers">
+    The apiserver coordinates with the appropriate XPC helpers:
+    - Image operations go to `container-core-images`
+    - Network operations go to `container-network-vmnet`
+    - Container operations go to the specific `container-runtime-linux` instance
+  </Step>
+  
+  <Step title="Helpers execute operations">
+    The helpers interact with macOS frameworks (Virtualization, vmnet) to perform the requested operations.
+  </Step>
+  
+  <Step title="Response propagates back">
+    Results are returned through the helper → apiserver → CLI → user chain.
+  </Step>
+</Steps>
+
+## Container lifecycle
+
+When you create and run a container:
+
+1. **CLI processes command** - Parses arguments and validates input
+2. **Apiserver receives request** - Validates and coordinates the operation
+3. **Core images helper** - Ensures the container image is available locally
+4. **Network helper** - Allocates an IP address for the container
+5. **Runtime helper launched** - A new `container-runtime-linux` instance starts
+6. **VM created** - The Virtualization framework creates a new VM
+7. **Container starts** - The application runs in the isolated VM
+
+<Warning>
+  Each container requires its own runtime helper and VM, which means resource usage scales with the number of running containers.
+</Warning>
+
+## Integration with macOS services
+
+### Keychain services
+
+Container registry credentials are stored securely in the macOS Keychain:
+
+- Encrypted credential storage
+- System-level security
+- No plaintext passwords in configuration files
+
+### Unified logging
+
+All `container` components use the macOS unified logging system:
+
+- Centralized log collection
+- Structured log messages
+- Integration with Console.app
+- Efficient log storage and retrieval
+
+<Note>
+  You can view container logs using the macOS Console app or the `log` command-line tool.
+</Note>

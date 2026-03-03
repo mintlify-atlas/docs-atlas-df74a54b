@@ -1,0 +1,39 @@
+---
+title: container builder start
+description: Start the BuildKit builder container
+---
+
+Starts the BuildKit builder container. CPU and memory limits can be set for the builder.
+
+## Usage
+
+```bash
+container builder start [--cpus <cpus>] [--memory <memory>] [--debug]
+```
+
+## Options
+
+<ParamField path="-c, --cpus" type="integer" default="2">
+  Number of CPUs to allocate to the builder container
+</ParamField>
+
+<ParamField path="-m, --memory" type="string" default="2048MB">
+  Amount of builder container memory (1MiByte granularity), with optional K, M, G, T, or P suffix
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug mode
+</ParamField>
+
+## Examples
+
+```bash
+# start the builder with default resources (2 CPUs, 2048MB memory)
+container builder start
+
+# start the builder with custom CPU allocation
+container builder start --cpus 4
+
+# start the builder with custom memory and CPU limits
+container builder start --cpus 4 --memory 4G
+```

@@ -1,0 +1,28 @@
+---
+title: container image delete
+description: Delete one or more images
+---
+
+Deletes one or more images. If no images are provided, `--all` can be used to delete all images. Images currently referenced by running containers cannot be deleted without first removing those containers.
+
+## Usage
+
+```bash
+container image delete [--all] [--force] [--debug] [<images> ...]
+```
+
+## Arguments
+
+<ParamField path="images" type="string[]">
+  Image names or IDs
+</ParamField>
+
+## Options
+
+<ParamField path="-a, --all" type="boolean">
+  Delete all images
+</ParamField>
+
+<ParamField path="-f, --force" type="boolean">
+  Ignore errors for images that are not found
+</ParamField>

@@ -1,0 +1,32 @@
+---
+title: container stop
+description: Stop running containers gracefully
+---
+
+Stops running containers gracefully by sending a signal. A timeout can be specified before a SIGKILL is issued. If no containers are specified, nothing is stopped unless `--all` is used.
+
+## Usage
+
+```bash
+container stop [--all] [--signal <signal>] [--time <time>] [--debug] [<container-ids> ...]
+```
+
+## Arguments
+
+<ParamField path="container-ids" type="string[]">
+  Container IDs
+</ParamField>
+
+## Options
+
+<ParamField path="-a, --all" type="boolean">
+  Stop all running containers
+</ParamField>
+
+<ParamField path="-s, --signal" type="string" default="SIGTERM">
+  Signal to send to the containers
+</ParamField>
+
+<ParamField path="-t, --time" type="number" default="5">
+  Seconds to wait before killing the containers
+</ParamField>

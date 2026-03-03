@@ -1,0 +1,22 @@
+---
+title: container image tag
+description: Apply a new tag to an existing image
+---
+
+Applies a new tag to an existing image. The original image reference remains unchanged.
+
+## Usage
+
+```bash
+container image tag <source> <target> [--debug]
+```
+
+## Arguments
+
+<ParamField path="source" type="string" required>
+  The existing image reference (format: image-name[:tag])
+</ParamField>
+
+<ParamField path="target" type="string" required>
+  The new image reference
+</ParamField>

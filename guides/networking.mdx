@@ -1,0 +1,441 @@
+---
+title: Networking
+description: Learn how to manage container networks, publish ports, and configure DNS
+---
+
+This guide covers container networking including port publishing, custom networks, DNS configuration, and network isolation.
+
+## Understanding container networking
+
+By default, containers attach to a network named `default` which provides:
+
+- IP address allocation
+- DNS resolution for container names
+- Communication between containers on the same network
+- Network isolation from other networks
+
+<Info>
+Running `container system start` creates a vmnet network named `default` to which your containers will attach unless you specify otherwise.
+</Info>
+
+## Publishing ports
+
+Use the `--publish` (or `-p`) option to forward TCP or UDP traffic from your loopback IP to the container.
+
+### Basic port publishing
+
+The option format is: `[host-ip:]host-port:container-port[/protocol]`
+
+```bash
+# Forward localhost:8080 to container port 80
+container run -d --rm -p 8080:80 nginx:latest
+```
+
+Test access using curl:
+
+```bash
+curl http://localhost:8080
+```
+
+### Publishing to specific interfaces
+
+<Tabs>
+  <Tab title="IPv4 loopback">
+    Forward requests from port 8080 on the IPv4 loopback IP to container port 8000:
+
+    ```bash
+    container run -d --rm -p 127.0.0.1:8080:8000 node:latest npx http-server -a :: -p 8000
+    ```
+
+    Test access:
+
+    ```bash
+    curl http://127.0.0.1:8080
+    ```
+  </Tab>
+
+  <Tab title="IPv6 loopback">
+    Forward requests from port 8080 on the IPv6 loopback IP to container port 8000:
+
+    ```bash
+    container run -d --rm -p '[::1]:8080:8000' node:latest npx http-server -a :: -p 8000
+    ```
+
+    Test access:
+
+    ```bash
+    curl -6 'http://[::1]:8080'
+    ```
+  </Tab>
+</Tabs>
+
+### Publishing UDP ports
+
+```bash
+container run -d --rm -p 8053:53/udp dns-server:latest
+```
+
+<Note>
+The protocol may be `tcp` or `udp` (case insensitive). TCP is the default if not specified.
+</Note>
+
+### Multiple port mappings
+
+```bash
+container run -d --rm \
+  -p 8080:80 \
+  -p 8443:443 \
+  -p 9090:9090 \
+  web-server:latest
+```
+
+<Info>
+If your container attaches to multiple networks, the ports you publish forward to the IP address of the interface attached to the first network.
+</Info>
+
+## Accessing containers directly
+
+Containers receive IP addresses and can be accessed directly from the host without port publishing.
+
+### Using IP addresses
+
+```bash
+container run -d --name my-web-server --rm web-test
+container ls
+```
+
+```
+ID             IMAGE            OS     ARCH   STATE    ADDR
+my-web-server  web-test:latest  linux  arm64  running  192.168.64.3
+```
+
+Access the container directly:
+
+```bash
+open http://192.168.64.3
+```
+
+### Using DNS names
+
+With DNS configured, containers are accessible by name:
+
+```bash
+open http://my-web-server.test
+```
+
+## DNS configuration
+
+### Setting up a local DNS domain
+
+Create a local DNS domain for container name resolution:
+
+```bash
+sudo container system dns create test
+container system property set dns.domain test
+```
+
+<Note>
+The first command requires administrator privileges to create a file under `/etc/resolver` and reload the macOS DNS resolver configuration.
+</Note>
+
+The second command makes `test` the default domain. For example, if you use `--name my-web-server`, queries to `my-web-server.test` will respond with that container's IP address.
+
+### Listing DNS domains
+
+```bash
+container system dns list
+```
+
+### Deleting DNS domains
+
+```bash
+sudo container system dns delete test
+```
+
+### Custom DNS configuration
+
+You can override DNS settings for individual containers:
+
+```bash
+container run -d --name my-container \
+  --dns 8.8.8.8 \
+  --dns 8.8.4.4 \
+  --dns-search example.com \
+  --dns-option ndots:2 \
+  ubuntu:latest
+```
+
+<Tabs>
+  <Tab title="DNS options">
+    - `--dns`: DNS nameserver IP address (can be specified multiple times)
+    - `--dns-domain`: Default DNS domain
+    - `--dns-search`: DNS search domains (can be specified multiple times)
+    - `--dns-option`: DNS resolver options
+    - `--no-dns`: Disable DNS configuration in the container
+  </Tab>
+</Tabs>
+
+## Creating custom networks
+
+<Note>
+This feature is available on macOS 26 and later.
+</Note>
+
+You can create separate isolated networks using `container network create`.
+
+### Basic network creation
+
+```bash
+container network create foo
+```
+
+### Custom subnets
+
+Specify custom IPv4 and IPv6 subnets:
+
+```bash
+container network create foo \
+  --subnet 192.168.100.0/24 \
+  --subnet-v6 fd00:1234::/64
+```
+
+<Info>
+When creating a network without explicit subnet options, the system uses default values if configured via system properties, or automatically allocates subnets. The system validates that custom subnets don't overlap with existing networks.
+</Info>
+
+### Configuring default subnets
+
+Set default IPv4 and IPv6 subnets for new networks:
+
+```bash
+# Set default IPv4 subnet
+container system property set network.subnet 192.168.100.1/24
+
+# Set default IPv6 prefix
+container system property set network.subnetv6 fd00:abcd::/64
+```
+
+These settings apply to networks created without explicit `--subnet` or `--subnet-v6` options.
+
+## Working with networks
+
+### Listing networks
+
+```bash
+container network list
+```
+
+```
+NETWORK  STATE    SUBNET
+default  running  192.168.64.0/24
+foo      running  192.168.65.0/24
+```
+
+### Inspecting networks
+
+```bash
+container network inspect foo
+```
+
+Shows detailed information about the network in JSON format.
+
+### Attaching containers to networks
+
+```bash
+container run -d --name my-web-server --network foo --rm web-test
+```
+
+Verify the container is on the correct subnet:
+
+```bash
+container ls
+```
+
+```
+ID             IMAGE            OS     ARCH   STATE    ADDR
+my-web-server  web-test:latest  linux  arm64  running  192.168.65.2
+```
+
+<Info>
+The `foo` network, the default network, and any other networks you create are isolated from one another. A container on one network has no connectivity to containers on other networks.
+</Info>
+
+### Deleting networks
+
+You can delete networks once no containers are attached:
+
+```bash
+container stop my-web-server
+container network delete foo
+```
+
+### Pruning unused networks
+
+Remove networks not connected to any containers:
+
+```bash
+container network prune
+```
+
+<Note>
+Default and system networks are preserved during pruning.
+</Note>
+
+## Network isolation
+
+Containers on different networks cannot communicate with each other:
+
+```bash
+# Create two isolated networks
+container network create net-a
+container network create net-b
+
+# Run containers on different networks
+container run -d --name container-a --network net-a alpine:latest sleep 3600
+container run -d --name container-b --network net-b alpine:latest sleep 3600
+```
+
+Containers `container-a` and `container-b` have no connectivity to each other.
+
+<Info>
+Network isolation is enforced at the network layer. Use separate networks to isolate different application environments or security zones.
+</Info>
+
+## Container-to-container communication
+
+Containers on the same network can communicate directly using IP addresses or DNS names.
+
+### Using DNS names
+
+```bash
+# Run a web server
+container run -d --name my-web-server --rm web-test
+
+# Access it from another container
+container run -it --rm web-test curl http://192.168.64.3
+```
+
+Output:
+```
+<!DOCTYPE html><html><head><title>Hello</title></head><body><h1>Hello, world!</h1></body></html>
+```
+
+If you set up a DNS domain, you can use hostnames:
+
+```bash
+container run -it --rm web-test curl http://my-web-server.test
+```
+
+<Note>
+Container-to-container networking relies on features present in macOS 26. This functionality will not work on macOS 15. See the [technical overview](https://github.com/apple/container/blob/main/docs/technical-overview.md#macos-15-limitations) for more details.
+</Note>
+
+## Accessing host services from containers
+
+Create a DNS domain with `--localhost <ipv4-address>` to make a domain used by a container to access a host service.
+
+### Setting up host access
+
+<Steps>
+  <Step title="Start a host service">
+    Start an HTTP server on your host:
+
+    ```bash
+    mkdir -p /tmp/test
+    cd /tmp/test
+    echo "hello" > index.html
+    python3 -m http.server 8000 --bind 127.0.0.1
+    ```
+  </Step>
+
+  <Step title="Create a DNS domain for host connection">
+    Choose an IP address that is least likely to conflict with any networks. Reasonably safe address ranges include:
+
+    - Documentation ranges: 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24
+    - Private range: 172.16.0.0/12
+
+    ```bash
+    sudo container system dns create host.container.internal --localhost 203.0.113.113
+    ```
+  </Step>
+
+  <Step title="Test access from container">
+    ```bash
+    container run -it --rm alpine/curl curl http://host.container.internal:8000
+    ```
+
+    Output:
+    ```
+    hello
+    ```
+  </Step>
+</Steps>
+
+## Custom MAC addresses
+
+Use the `mac` option to specify a custom MAC address for your container's network interface.
+
+### Setting a MAC address
+
+```bash
+container run --network default,mac=02:42:ac:11:00:02 ubuntu:latest
+```
+
+<Info>
+The MAC address must be in the format `XX:XX:XX:XX:XX:XX` (with colons or hyphens). Set the two least significant bits of the first octet to `10` (locally signed, unicast address).
+</Info>
+
+### Verifying the MAC address
+
+```bash
+container run --rm --network default,mac=02:42:ac:11:00:02 ubuntu:latest ip addr show eth0
+```
+
+Output:
+```
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.64.2/24 brd 192.168.64.255 scope global eth0
+       valid_lft forever preferred_lft forever
+```
+
+<Note>
+If you don't specify a MAC address, `container` will generate one for you. Generated addresses have a first nibble set to hexadecimal `f` (`fX:XX:XX:XX:XX:XX`) to minimize conflicts with custom addresses.
+</Note>
+
+## Use cases
+
+### Network testing scenarios
+
+Custom MAC addresses are useful for:
+- Network testing scenarios requiring predictable MAC addresses
+- Consistent network configuration across container restarts
+- License systems tied to MAC addresses
+
+### Development environments
+
+Use custom networks to isolate different projects:
+
+```bash
+# Create project-specific networks
+container network create project-a
+container network create project-b
+
+# Run isolated environments
+container run -d --name app-a --network project-a app:latest
+container run -d --name app-b --network project-b app:latest
+```
+
+### Multi-tier applications
+
+Isolate application tiers on different networks:
+
+```bash
+# Create networks for different tiers
+container network create frontend
+container network create backend
+
+# Run services on appropriate networks
+container run -d --name web --network frontend nginx:latest
+container run -d --name db --network backend postgres:latest
+```

@@ -1,0 +1,64 @@
+---
+title: container registry login
+description: Authenticate with a container registry
+---
+
+Authenticates with a registry. Credentials can be provided interactively or via flags. The login is stored for reuse by subsequent commands.
+
+## Usage
+
+```bash
+container registry login [--scheme <scheme>] [--password-stdin] [--username <username>] [--debug] <server>
+```
+
+## Arguments
+
+<ParamField path="server" type="string" required>
+  Registry server name
+</ParamField>
+
+## Options
+
+<ParamField path="--scheme" type="string" default="auto">
+  Scheme to use when connecting to the container registry. One of: `http`, `https`, `auto`
+  
+  **Behavior of `auto`:**
+  
+  When `auto` is selected, the target registry is considered **internal/local** if the registry host matches any of these criteria:
+  - The host is a loopback address (e.g., `localhost`, `127.*`)
+  - The host is within the `RFC1918` private IP ranges:
+    - `10.*.*.*`
+    - `192.168.*.*`
+    - `172.16.*.*` through `172.31.*.*`
+  - The host ends with the machine's default container DNS domain
+  
+  For internal/local registries, the client uses **HTTP**. Otherwise, it uses **HTTPS**.
+</ParamField>
+
+<ParamField path="--password-stdin" type="boolean">
+  Take the password from stdin
+</ParamField>
+
+<ParamField path="-u, --username" type="string">
+  Registry user name
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug mode
+</ParamField>
+
+## Examples
+
+```bash
+# login to a registry with interactive prompts
+container registry login registry.example.com
+
+# login with username specified
+container registry login --username myuser registry.example.com
+
+# login with password from stdin
+echo "mypassword" | container registry login --password-stdin --username myuser registry.example.com
+
+# login to a local registry using HTTP
+container registry login --scheme http localhost:5000
+```

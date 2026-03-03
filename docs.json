@@ -1,122 +1,143 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Container",
+  "theme": "aspen",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#007AFF",
+    "light": "#5AC8FA",
+    "dark": "#0A84FF"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/apple/container"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/apple/container"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "installation",
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Guides",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "guides/tutorial",
+              "guides/working-with-containers",
+              "guides/working-with-images",
+              "guides/networking",
+              "guides/volumes-and-storage",
+              "guides/resource-management"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "CLI Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "cli/overview"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Container Commands",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "cli/run",
+              "cli/create",
+              "cli/start",
+              "cli/stop",
+              "cli/exec",
+              "cli/list",
+              "cli/inspect",
+              "cli/logs",
+              "cli/delete",
+              "cli/kill"
+            ]
+          },
+          {
+            "group": "Image Commands",
+            "pages": [
+              "cli/build",
+              "cli/image-list",
+              "cli/image-pull",
+              "cli/image-push",
+              "cli/image-tag",
+              "cli/image-remove",
+              "cli/image-inspect"
+            ]
+          },
+          {
+            "group": "System Commands",
+            "pages": [
+              "cli/system-start",
+              "cli/system-stop",
+              "cli/system-version",
+              "cli/system-property"
+            ]
+          },
+          {
+            "group": "Network Commands",
+            "pages": [
+              "cli/network-create",
+              "cli/network-list",
+              "cli/network-inspect",
+              "cli/network-delete"
+            ]
+          },
+          {
+            "group": "Builder Commands",
+            "pages": [
+              "cli/builder-start",
+              "cli/builder-stop",
+              "cli/builder-delete"
+            ]
+          },
+          {
+            "group": "Registry Commands",
+            "pages": [
+              "cli/registry-login",
+              "cli/registry-logout",
+              "cli/registry-list"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Architecture",
+        "groups": [
+          {
+            "group": "Technical Details",
+            "pages": [
+              "architecture/overview",
+              "architecture/virtualization",
+              "architecture/services"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "development/building",
+              "development/testing",
+              "development/debugging",
+              "development/contributing"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

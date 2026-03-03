@@ -1,0 +1,456 @@
+---
+title: Working with images
+description: Learn how to pull, push, build, tag, and manage container images
+---
+
+This guide covers image management operations including pulling from registries, building from Dockerfiles, tagging, and organizing your local image store.
+
+## Pulling images from registries
+
+The `container image pull` command downloads an image from a registry to your local machine.
+
+### Basic usage
+
+```bash
+# Pull the latest tag by default
+container image pull ubuntu:latest
+
+# Pull a specific tag
+container image pull python:3.11-alpine
+
+# Pull from a specific registry
+container image pull ghcr.io/apple/container-builder-shim/builder:0.0.3
+```
+
+### Platform-specific pulls
+
+You can specify the platform when pulling multi-platform images:
+
+```bash
+# Pull for a specific architecture
+container image pull --arch amd64 ubuntu:latest
+
+# Pull for a specific platform
+container image pull --platform linux/arm64 python:alpine
+```
+
+<Info>
+The `--platform` option takes precedence over `--arch` and `--os` flags. Use the format `os/arch[/variant]`.
+</Info>
+
+### Registry authentication
+
+For private registries, authenticate first:
+
+```bash
+container registry login some-registry.example.com
+```
+
+You'll be prompted for your username and password.
+
+## Building images
+
+The `container build` command creates OCI images from a Dockerfile or Containerfile.
+
+### Basic build
+
+```bash
+container build --tag my-app:latest .
+```
+
+This builds an image using the `Dockerfile` in the current directory and tags it as `my-app:latest`.
+
+### Using a custom Dockerfile
+
+```bash
+container build --file docker/Dockerfile.prod --tag my-app:prod .
+```
+
+<Note>
+When no `-f/--file` is specified, the build command will look for `Dockerfile` first, then fall back to `Containerfile` if `Dockerfile` is not found.
+</Note>
+
+### Build arguments
+
+Pass build-time variables to your Dockerfile:
+
+```bash
+container build --build-arg NODE_VERSION=18 --build-arg ENV=production --tag my-app .
+```
+
+In your Dockerfile:
+
+```dockerfile
+ARG NODE_VERSION=16
+FROM node:${NODE_VERSION}
+
+ARG ENV=development
+ENV NODE_ENV=${ENV}
+```
+
+### Multi-stage builds
+
+Build a specific stage from a multi-stage Dockerfile:
+
+```bash
+container build --target production --tag my-app:prod .
+```
+
+### Multiple tags
+
+You can apply multiple tags to an image during build:
+
+```bash
+container build \
+  -t my-app:latest \
+  -t my-app:v1.0.0 \
+  -t my-app:stable .
+```
+
+### Build options
+
+<Tabs>
+  <Tab title="Resource control">
+    ```bash
+    # Allocate more resources to the builder
+    container build --cpus 8 --memory 32g --tag big-app .
+    ```
+
+    <Info>
+    Default builder resources are 2 CPUs and 2048MB memory. Increase these for resource-intensive builds.
+    </Info>
+  </Tab>
+
+  <Tab title="Cache control">
+    ```bash
+    # Disable build cache
+    container build --no-cache --tag my-app .
+
+    # Pull latest base image
+    container build --pull --tag my-app .
+    ```
+  </Tab>
+
+  <Tab title="Output control">
+    ```bash
+    # Suppress build output
+    container build --quiet --tag my-app .
+
+    # Control progress display
+    container build --progress plain --tag my-app .
+    ```
+  </Tab>
+</Tabs>
+
+## Building multiplatform images
+
+You can create an image that supports both Apple silicon Macs and x86-64 servers:
+
+```bash
+container build \
+  --arch arm64 \
+  --arch amd64 \
+  --tag registry.example.com/fido/web-test:latest \
+  --file Dockerfile .
+```
+
+### Testing platform variants
+
+Try running the command `uname -a` with different architecture variants:
+
+```bash
+# Run the arm64 variant
+container run --arch arm64 --rm registry.example.com/fido/web-test:latest uname -a
+```
+
+Output:
+```
+Linux 7932ce5f-ec10-4fbe-a2dc-f29129a86b64 6.1.68 #1 SMP Mon Mar 31 18:27:51 UTC 2025 aarch64 GNU/Linux
+```
+
+```bash
+# Run the amd64 variant (uses Rosetta translation)
+container run --arch amd64 --rm registry.example.com/fido/web-test:latest uname -a
+```
+
+Output:
+```
+Linux c0376e0a-0bfd-4eea-9e9e-9f9a2c327051 6.1.68 #1 SMP Mon Mar 31 18:27:51 UTC 2025 x86_64 GNU/Linux
+```
+
+<Info>
+When you run the command with the `amd64` architecture, the x86-64 version runs under Rosetta translation on Apple Silicon Macs.
+</Info>
+
+## Pushing images to registries
+
+The `container image push` command uploads an image to a registry.
+
+### Basic push
+
+```bash
+container image push some-registry.example.com/fido/web-test:latest
+```
+
+### Pushing multiplatform images
+
+The command to push your multiplatform image to a registry is no different than that for a single-platform image:
+
+```bash
+container image push registry.example.com/fido/web-test:latest
+```
+
+<Note>
+By default `container` is configured to use Docker Hub. You can change the default registry by running:
+
+```bash
+container system property set registry.domain some-registry.example.com
+```
+</Note>
+
+## Tagging images
+
+The `container image tag` command creates a new tag for an existing image without duplicating the image data.
+
+### Basic tagging
+
+```bash
+container image tag web-test some-registry.example.com/fido/web-test:latest
+```
+
+### Multiple tags
+
+```bash
+container image tag my-app:latest my-app:v1.0.0
+container image tag my-app:latest my-app:stable
+container image tag my-app:latest registry.example.com/team/my-app:latest
+```
+
+<Info>
+The original image reference remains unchanged. Tagging creates an alias to the same image data.
+</Info>
+
+## Listing images
+
+The `container image list` (or `container image ls`) command shows your local images.
+
+### Basic listing
+
+```bash
+container image list
+```
+
+```
+NAME      TAG     DIGEST
+python    alpine  b4d299311845147e7e47c970...
+web-test  latest  25b99501f174803e21c58f9c...
+```
+
+### Output formats
+
+<Tabs>
+  <Tab title="Table format">
+    ```bash
+    container image list --format table
+    ```
+
+    Default format showing name, tag, and digest.
+  </Tab>
+
+  <Tab title="Verbose">
+    ```bash
+    container image list --verbose
+    ```
+
+    Provides additional details such as image ID, creation time, and full size.
+  </Tab>
+
+  <Tab title="JSON format">
+    ```bash
+    container image list --format json
+    ```
+
+    Machine-readable format for scripting.
+  </Tab>
+
+  <Tab title="Quiet mode">
+    ```bash
+    container image list --quiet
+    ```
+
+    Only outputs image names.
+  </Tab>
+</Tabs>
+
+## Inspecting images
+
+The `container image inspect` command displays detailed information in JSON format:
+
+```bash
+container image inspect web-test | jq
+```
+
+```json
+[
+  {
+    "name": "web-test:latest",
+    "variants": [
+      {
+        "platform": {
+          "os": "linux",
+          "architecture": "arm64"
+        },
+        "config": {
+          "created": "2025-05-08T22:27:23Z",
+          "architecture": "arm64"
+        }
+      }
+    ]
+  }
+]
+```
+
+<Tip>
+Use `jq` to extract specific information:
+
+```bash
+# Get the architecture
+container image inspect web-test | jq '.[0].variants[0].platform.architecture'
+```
+</Tip>
+
+## Saving and loading images
+
+### Saving images to tar archives
+
+Export images for offline transport:
+
+```bash
+container image save --output my-app.tar my-app:latest
+```
+
+You can save multiple images to a single archive:
+
+```bash
+container image save --output images.tar my-app:latest python:alpine ubuntu:latest
+```
+
+### Loading images from tar archives
+
+Import images from a tar archive:
+
+```bash
+container image load --input my-app.tar
+```
+
+<Note>
+The tar file must be created by `container image save` or be in OCI tar format.
+</Note>
+
+## Deleting images
+
+The `container image delete` (or `container image rm`) command removes one or more images.
+
+### Delete specific images
+
+```bash
+container image delete web-test
+```
+
+### Delete multiple images
+
+```bash
+container image delete web-test python:alpine ubuntu:latest
+```
+
+### Delete all images
+
+```bash
+container image delete --all
+```
+
+<Warning>
+Images currently referenced by running containers cannot be deleted without first removing those containers.
+</Warning>
+
+### Force deletion
+
+```bash
+container image delete --force non-existent-image
+```
+
+The `--force` flag ignores errors for images that are not found.
+
+## Pruning images
+
+The `container image prune` command removes unused images to reclaim disk space.
+
+### Remove dangling images
+
+```bash
+container image prune
+```
+
+By default, this only removes dangling images (images with no tags).
+
+### Remove all unused images
+
+```bash
+container image prune --all
+```
+
+This removes all images not referenced by any container.
+
+<Info>
+Pruning helps reclaim disk space from unused layers and old images.
+</Info>
+
+## Managing the builder
+
+When you first run `container build`, `container` starts a builder, which is a utility container that builds images from your Dockerfiles.
+
+### Configuring builder resources
+
+For resource-intensive builds, increase the memory and CPU limits for the builder VM:
+
+```bash
+container builder start --cpus 8 --memory 32g
+```
+
+<Note>
+By default, the builder VM receives 2 GiBytes of RAM and 2 CPUs.
+</Note>
+
+### Restarting the builder with new limits
+
+If your builder is already running and you need to modify the limits:
+
+```bash
+container builder stop
+container builder delete
+container builder start --cpus 8 --memory 32g
+```
+
+### Checking builder status
+
+```bash
+container builder status
+```
+
+### Stopping the builder
+
+```bash
+container builder stop
+```
+
+### Deleting the builder
+
+```bash
+container builder delete
+```
+
+Use `--force` to delete even if running:
+
+```bash
+container builder delete --force
+```

@@ -1,0 +1,28 @@
+---
+title: container start
+description: Start a stopped container
+---
+
+Starts a stopped container. You can attach to the container's output streams and optionally keep STDIN open.
+
+## Usage
+
+```bash
+container start [--attach] [--interactive] [--debug] <container-id>
+```
+
+## Arguments
+
+<ParamField path="container-id" type="string" required>
+  Container ID
+</ParamField>
+
+## Options
+
+<ParamField path="-a, --attach" type="boolean">
+  Attach stdout/stderr
+</ParamField>
+
+<ParamField path="-i, --interactive" type="boolean">
+  Attach stdin
+</ParamField>

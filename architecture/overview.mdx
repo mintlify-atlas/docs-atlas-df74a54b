@@ -1,0 +1,120 @@
+---
+title: Technical overview
+description: Learn about containers and how the container tool runs Linux containers on macOS
+---
+
+## What are containers?
+
+Containers are a way to package an application and its dependencies into a single unit. At runtime, containers provide isolation from the host machine as well as other colocated containers, allowing applications to run securely and efficiently in a wide variety of environments.
+
+Containerization is an important server-side technology that is used throughout the software lifecycle:
+
+<Steps>
+  <Step title="Development">
+    Backend developers use containers on their personal systems to create predictable execution environments for applications, and to develop and test their applications under conditions that better approximate how they would run in the datacenter.
+  </Step>
+  
+  <Step title="CI/CD">
+    Continuous integration and deployment (CI/CD) systems use containerization to perform reproducible builds of applications, package the results as deployable images, and deploy them to the datacenter.
+  </Step>
+  
+  <Step title="Production">
+    Datacenters run container orchestration platforms that use the images to run containerized applications in a reliable, highly available compute cluster.
+  </Step>
+</Steps>
+
+<Info>
+  None of this workflow would be practical without ensuring interoperability between different container implementations. The Open Container Initiative (OCI) creates and maintains these standards for container images and runtimes.
+</Info>
+
+## How does container run my container?
+
+Many operating systems support containers, but the most commonly encountered containers are those that run on the Linux operating system. With macOS, the typical way to run Linux containers is to launch a Linux virtual machine (VM) that hosts all of your containers.
+
+`container` runs containers differently. Using the open source [Containerization](https://github.com/apple/containerization) package, it runs a lightweight VM for each container that you create.
+
+### Per-container virtualization benefits
+
+This approach has the following properties:
+
+**Security**
+
+Each container has the isolation properties of a full VM, using a minimal set of core utilities and dynamic libraries to reduce resource utilization and attack surface.
+
+**Privacy**
+
+When sharing host data using `container`, you mount only necessary data into each VM. With a shared VM, you need to mount all data that you may ever want to use into the VM, so that it can be mounted selectively into containers.
+
+**Performance**
+
+Containers created using `container` require less memory than full VMs, with boot times that are comparable to containers running in a shared VM.
+
+<Note>
+  Since `container` consumes and produces standard OCI images, you can easily build with and run images produced by other container applications, and the images that you build will run everywhere.
+</Note>
+
+## Current limitations
+
+With the initial release of `container`, you get basic facilities for building and running containers, but many common containerization features remain to be implemented.
+
+### Memory ballooning
+
+The macOS Virtualization framework implements only partial support for memory ballooning, which is a technology that allows virtual machines to dynamically use and relinquish host memory. When you create a container, the underlying virtual machine only uses the amount of memory that the containerized application needs.
+
+For example, you might start a container using the option `--memory 16g`, but see that the application is only using 2 GiBytes of RAM in the macOS Activity Monitor.
+
+<Warning>
+  Currently, memory pages freed to the Linux operating system by processes running in the container's VM are not relinquished to the host. If you run many memory-intensive containers, you may need to occasionally restart them to reduce memory utilization.
+</Warning>
+
+### macOS 15 limitations
+
+`container` relies on the new features and enhancements present in macOS 26. You can run `container` on macOS 15, but you will need to be aware of some user experience and functional limitations.
+
+<Info>
+  There is no plan to address issues found with macOS 15 that cannot be reproduced on macOS 26.
+</Info>
+
+#### Network isolation
+
+The vmnet framework in macOS 15 can only provide networks where the attached containers are isolated from one another. Container-to-container communication over the virtual network is not possible.
+
+#### Multiple networks
+
+In macOS 15, all containers attach to the default vmnet network. The `container network` commands are not available on macOS 15, and using the `--network` option for `container run` or `container create` will result in an error.
+
+#### Container IP addresses
+
+In macOS 15, limitations in the vmnet framework mean that the container network can only be created when the first container starts. Since the network XPC helper provides IP addresses to containers, and the helper has to start before the first container, it is possible for the network helper and vmnet to disagree on the subnet address, resulting in containers that are completely cut off from the network.
+
+Normally, vmnet creates the container network using the CIDR address 192.168.64.1/24, and on macOS 15, `container` defaults to using this CIDR address in the network helper.
+
+<Steps>
+  <Step title="Check existing bridge interface">
+    Before creating the first container, scan the output of the command `ifconfig` for a bridge interface named similarly to `bridge100`.
+  </Step>
+  
+  <Step title="Verify subnet after container creation">
+    After creating the first container, run `ifconfig` again, and locate the new bridge interface to determine the container subnet address.
+  </Step>
+  
+  <Step title="Check IP address mismatch">
+    Run `container ls` to check the IP address given to the container by the network helper. If the address corresponds to a different network, proceed to the next step.
+  </Step>
+  
+  <Step title="Stop container services">
+    Run `container system stop` to terminate the services for `container`.
+  </Step>
+  
+  <Step title="Update subnet configuration">
+    Using the macOS `defaults` command, update the default subnet value used by the network helper process. For example, if the bridge address shown by `ifconfig` is 192.168.66.1, run:
+    
+    ```bash
+    defaults write com.apple.container.defaults network.subnet 192.168.66.1/24
+    ```
+  </Step>
+  
+  <Step title="Restart and verify">
+    Run `container system start` to launch services again. Try running the container again and verify that its IP address matches the current bridge interface value.
+  </Step>
+</Steps>

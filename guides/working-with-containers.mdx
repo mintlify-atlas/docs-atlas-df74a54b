@@ -1,0 +1,404 @@
+---
+title: Working with containers
+description: Learn how to create, start, stop, execute commands, and view logs for containers
+---
+
+This guide covers essential container lifecycle operations including creating, starting, stopping, and managing running containers.
+
+## Creating containers
+
+The `container create` command creates a container from an image without starting it. This is useful when you want to configure a container but start it later.
+
+```bash
+container create --name my-container ubuntu:latest echo "hello"
+```
+
+After creating a container, you can start it using the `container start` command:
+
+```bash
+container start my-container
+```
+
+<Tip>
+Use `container run` to create and start a container in a single command. The `run` command is a combination of `create` and `start`.
+</Tip>
+
+## Running containers
+
+The `container run` command is the most common way to start containers. It creates and starts a container in one operation.
+
+### Basic usage
+
+```bash
+# Run a container and attach an interactive shell
+container run -it ubuntu:latest /bin/bash
+
+# Run a background web server
+container run -d --name web -p 8080:80 nginx:latest
+
+# Set environment variables and limit resources
+container run -e NODE_ENV=production --cpus 2 --memory 1G node:18
+```
+
+### Common options
+
+<Tabs>
+  <Tab title="Process options">
+    - `-e, --env`: Set environment variables (format: `key=value`)
+    - `--env-file`: Read environment variables from a file
+    - `-u, --user`: Set the user for the process
+    - `-w, --workdir`: Set the initial working directory
+    - `-i, --interactive`: Keep standard input open
+    - `-t, --tty`: Open a TTY with the process
+  </Tab>
+
+  <Tab title="Management options">
+    - `-d, --detach`: Run the container in the background
+    - `--name`: Assign a name to the container
+    - `--rm`: Automatically remove the container after it stops
+    - `--entrypoint`: Override the entrypoint of the image
+    - `--init`: Run an init process that forwards signals and reaps processes
+  </Tab>
+
+  <Tab title="Resource options">
+    - `-c, --cpus`: Number of CPUs to allocate
+    - `-m, --memory`: Amount of memory (with optional K, M, G, T, or P suffix)
+  </Tab>
+</Tabs>
+
+### Detached vs. interactive mode
+
+**Detached mode** (`-d`) runs containers in the background:
+
+```bash
+container run -d --name my-web-server --rm web-test
+```
+
+The `--detach` flag runs the container in the background, so you can continue running commands in the same terminal.
+
+**Interactive mode** (`-it`) allows you to interact with the container:
+
+```bash
+container run -it ubuntu:latest /bin/bash
+```
+
+The `-i` flag keeps stdin open, and `-t` allocates a pseudo-TTY.
+
+<Info>
+You will often see these two options abbreviated and specified together as `-ti` or `-it`.
+</Info>
+
+## Starting and stopping containers
+
+### Starting containers
+
+Start a stopped container:
+
+```bash
+container start <container-id>
+```
+
+You can attach to the container's output streams:
+
+```bash
+container start --attach --interactive my-container
+```
+
+### Stopping containers gracefully
+
+The `container stop` command stops running containers gracefully by sending a signal (default: SIGTERM):
+
+```bash
+# Stop a specific container
+container stop my-web-server
+
+# Stop multiple containers
+container stop container1 container2 container3
+
+# Stop all running containers
+container stop --all
+
+# Specify a custom timeout before SIGKILL
+container stop --time 10 my-container
+```
+
+<Note>
+The `--time` option specifies seconds to wait before killing the container (default: 5 seconds).
+</Note>
+
+### Killing containers immediately
+
+The `container kill` command immediately kills running containers:
+
+```bash
+# Kill a container with default KILL signal
+container kill my-container
+
+# Send a custom signal
+container kill --signal SIGTERM my-container
+
+# Kill all running containers
+container kill --all
+```
+
+<Warning>
+Use `kill` with caution: it does not allow for graceful shutdown. Prefer `stop` for normal operations.
+</Warning>
+
+## Executing commands in running containers
+
+The `container exec` command runs a new command inside a running container:
+
+```bash
+# Execute a single command
+container exec my-web-server ls /content
+```
+
+Output:
+```
+index.html
+```
+
+### Interactive shell
+
+Run an interactive shell to explore the container:
+
+```bash
+container exec --tty --interactive my-web-server sh
+```
+
+```
+/content # ls
+index.html
+/content # uname -a
+Linux my-web-server 6.12.28 #1 SMP Tue May 20 15:19:05 UTC 2025 aarch64 Linux
+/content # exit
+```
+
+<Tip>
+The `--tty` and `--interactive` flags allow you to interact with the shell from your host terminal. These are often abbreviated as `-it`.
+</Tip>
+
+### Additional exec options
+
+```bash
+# Run as a specific user
+container exec --user www-data my-container whoami
+
+# Set environment variables
+container exec --env DEBUG=true my-container /app/script.sh
+
+# Change working directory
+container exec --workdir /var/log my-container ls -la
+
+# Run in detached mode
+container exec --detach my-container /background-task.sh
+```
+
+## Viewing container logs
+
+The `container logs` command displays the output from your containerized application.
+
+### Basic usage
+
+```bash
+container logs my-web-server
+```
+
+Example output:
+```
+192.168.64.1 - - [15/May/2025 03:00:03] "GET / HTTP/1.1" 200 -
+```
+
+### Following logs in real-time
+
+```bash
+container logs --follow my-web-server
+```
+
+<Note>
+Press Ctrl+C to stop following the logs.
+</Note>
+
+### Limiting log output
+
+```bash
+# Show only the last 50 lines
+container logs -n 50 my-web-server
+```
+
+### Viewing boot logs
+
+Use the `--boot` option to see the logs for the virtual machine boot and init process:
+
+```bash
+container logs --boot my-web-server
+```
+
+Example output:
+```
+[    0.098284] cacheinfo: Unable to detect cache hierarchy for CPU 0
+[    0.098466] random: crng init done
+[    0.099657] brd: module loaded
+[    0.100707] loop: module loaded
+[    0.127467] EXT4-fs (vda): mounted filesystem without journal. Quota mode: disabled.
+[    0.127525] VFS: Mounted root (ext4 filesystem) readonly on device 254:0.
+[    0.143252] Run /sbin/vminitd as init process
+2025-05-15T02:24:08+0000 info vminitd : [vminitd] vminitd booting...
+```
+
+## Listing containers
+
+The `container list` (or `container ls`) command shows containers.
+
+### List running containers
+
+```bash
+container list
+```
+
+```
+ID             IMAGE            OS     ARCH   STATE    ADDR
+my-web-server  web-test:latest  linux  arm64  running  192.168.64.3
+```
+
+### List all containers (including stopped)
+
+```bash
+container list --all
+```
+
+<Tip>
+You can abbreviate the `--all` option to `-a`:
+
+```bash
+container ls -a
+```
+</Tip>
+
+### Output formats
+
+<Tabs>
+  <Tab title="Table format">
+    ```bash
+    container list --format table
+    ```
+
+    ```
+    ID             IMAGE            OS     ARCH   STATE    ADDR
+    my-web-server  web-test:latest  linux  arm64  running  192.168.64.3
+    ```
+  </Tab>
+
+  <Tab title="JSON format">
+    ```bash
+    container list --format json
+    ```
+
+    Useful for scripting and automation.
+  </Tab>
+
+  <Tab title="Quiet mode">
+    ```bash
+    container list --quiet
+    ```
+
+    Only outputs container IDs, one per line.
+  </Tab>
+</Tabs>
+
+## Inspecting containers
+
+The `container inspect` command displays detailed container information in JSON format:
+
+```bash
+container inspect my-web-server | jq
+```
+
+```json
+[
+  {
+    "status": "running",
+    "networks": [
+      {
+        "address": "192.168.64.3/24",
+        "gateway": "192.168.64.1",
+        "hostname": "my-web-server.test.",
+        "network": "default"
+      }
+    ],
+    "configuration": {
+      "mounts": [],
+      "hostname": "my-web-server",
+      "id": "my-web-server",
+      "resources": {
+        "cpus": 4,
+        "memoryInBytes": 1073741824
+      }
+    }
+  }
+]
+```
+
+<Tip>
+Use `jq` to filter and format JSON output:
+
+```bash
+# Get only the IP address
+container inspect my-web-server | jq '.[0].networks[0].address'
+```
+</Tip>
+
+## Deleting containers
+
+The `container delete` (or `container rm`) command removes one or more containers.
+
+### Delete stopped containers
+
+```bash
+container delete my-container
+```
+
+### Delete multiple containers
+
+```bash
+container delete container1 container2 container3
+```
+
+### Force delete running containers
+
+```bash
+container delete --force my-running-container
+```
+
+<Warning>
+Forcing deletion of a running container will immediately kill it without graceful shutdown.
+</Warning>
+
+### Delete all containers
+
+```bash
+container delete --all
+```
+
+### Auto-remove with --rm flag
+
+Use the `--rm` flag when running a container to automatically remove it after it stops:
+
+```bash
+container run --rm --name temp-container ubuntu:latest echo "hello"
+```
+
+## Pruning stopped containers
+
+The `container prune` command removes all stopped containers to reclaim disk space:
+
+```bash
+container prune
+```
+
+The command outputs the amount of space freed after deletion.
+
+<Info>
+Pruning only affects stopped containers. Running containers are not touched.
+</Info>

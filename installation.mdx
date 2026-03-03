@@ -1,0 +1,218 @@
+---
+title: Installation
+description: Install Container CLI on your Mac with Apple silicon
+---
+
+# Installation
+
+This guide will walk you through installing, upgrading, and uninstalling Container CLI on your Mac.
+
+## Requirements
+
+Before installing `container`, ensure your system meets these requirements:
+
+- Mac with Apple silicon
+- macOS 26 or later
+- Administrator access (for installation)
+
+<Warning>
+  Container CLI is supported on macOS 26, since it takes advantage of new features and enhancements to virtualization and networking in this release. Older versions of macOS are not supported.
+</Warning>
+
+## Initial install
+
+<Steps>
+  <Step title="Download the installer">
+    Download the latest signed installer package for `container` from the [GitHub release page](https://github.com/apple/container/releases).
+  </Step>
+  
+  <Step title="Run the installer">
+    Double-click the package file and follow the instructions. Enter your administrator password when prompted to give the installer permission to place the installed files under `/usr/local`.
+  </Step>
+  
+  <Step title="Start the system service">
+    Open a terminal and start the container service:
+    
+    ```bash
+    container system start
+    ```
+    
+    If you have not installed a Linux kernel yet, the command will prompt you to install one:
+    
+    ```bash
+    % container system start
+    
+    Verifying apiserver is running...
+    Installing base container filesystem...
+    No default kernel configured.
+    Install the recommended default kernel from [https://github.com/kata-containers/kata-containers/releases/download/3.17.0/kata-static-3.17.0-arm64.tar.xz]? [Y/n]: y
+    Installing kernel...
+    %
+    ```
+  </Step>
+  
+  <Step title="Verify the installation">
+    Verify that the application is working by running a command to list all containers:
+    
+    ```bash
+    container list --all
+    ```
+    
+    If you haven't created any containers yet, the command outputs an empty list:
+    
+    ```bash
+    % container list --all
+    ID  IMAGE  OS  ARCH  STATE  ADDR
+    %
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  The installer places files under `/usr/local/bin` and `/usr/local/libexec`. Make sure `/usr/local/bin` is in your PATH.
+</Note>
+
+## Upgrade or downgrade
+
+For both upgrading and downgrading, you can manually download and install the signed installer package by following the steps from [initial install](#initial-install) or use the `update-container.sh` script (installed to `/usr/local/bin`).
+
+### Upgrade to latest version
+
+<Steps>
+  <Step title="Stop the container service">
+    If you're upgrading, you must stop your existing `container`:
+    
+    ```bash
+    container system stop
+    ```
+  </Step>
+  
+  <Step title="Run the update script">
+    For upgrading to the latest release version, simply run:
+    
+    ```bash
+    /usr/local/bin/update-container.sh
+    ```
+  </Step>
+  
+  <Step title="Start the container service">
+    Start the system service with the new version:
+    
+    ```bash
+    container system start
+    ```
+  </Step>
+</Steps>
+
+### Downgrade to specific version
+
+<Steps>
+  <Step title="Stop the container service">
+    Stop your existing `container`:
+    
+    ```bash
+    container system stop
+    ```
+  </Step>
+  
+  <Step title="Uninstall current version">
+    Uninstall your existing `container`. The `-k` flag keeps your user data, while `-d` removes it:
+    
+    ```bash
+    /usr/local/bin/uninstall-container.sh -k
+    ```
+  </Step>
+  
+  <Step title="Install specific version">
+    Use the update script with the `-v` flag to specify the version:
+    
+    ```bash
+    /usr/local/bin/update-container.sh -v 0.3.0
+    ```
+  </Step>
+  
+  <Step title="Start the container service">
+    Start the system service:
+    
+    ```bash
+    container system start
+    ```
+  </Step>
+</Steps>
+
+## Uninstall
+
+Use the `uninstall-container.sh` script (installed to `/usr/local/bin`) to remove `container` from your system.
+
+<CodeGroup>
+
+```bash Remove with data
+/usr/local/bin/uninstall-container.sh -d
+```
+
+```bash Keep user data
+/usr/local/bin/uninstall-container.sh -k
+```
+
+</CodeGroup>
+
+<Note>
+  To retain your user data so that it is available should you reinstall later, use the `-k` flag. To remove your user data along with the tool, use the `-d` flag.
+</Note>
+
+## Building from source
+
+If you want to build `container` from source instead of using the installer, you'll need:
+
+- Mac with Apple silicon
+- macOS 15 minimum, macOS 26 recommended
+- Xcode 26, set as the active developer directory
+
+### Build and install
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the container repository to your local machine:
+    
+    ```bash
+    git clone https://github.com/apple/container.git
+    cd container
+    ```
+  </Step>
+  
+  <Step title="Build the project">
+    Build `container` and run tests:
+    
+    ```bash
+    make all test integration
+    ```
+    
+    For a release build with better performance:
+    
+    ```bash
+    BUILD_CONFIGURATION=release make all test integration
+    ```
+  </Step>
+  
+  <Step title="Install the binaries">
+    Copy the binaries to `/usr/local/bin` and `/usr/local/libexec` (requires entering an administrator password):
+    
+    ```bash
+    make install
+    ```
+    
+    Or for a release build:
+    
+    ```bash
+    BUILD_CONFIGURATION=release make install
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  There is a bug in the `vmnet` framework on macOS 26 that causes network creation to fail if the `container` helper applications are located under your `Documents` or `Desktop` directories. If you prefer to use the binaries that `make all` creates in your project `bin` and `libexec` directories, locate your project elsewhere, such as `~/projects/container`, until this issue is resolved.
+</Warning>
+
+## Next steps
+
+Now that you have Container CLI installed, proceed to the [quick start guide](/quickstart) to run your first container.

@@ -1,0 +1,24 @@
+---
+title: container network list
+description: List user-defined networks
+---
+
+Lists user-defined networks.
+
+<Note>Network commands are available on macOS 26 and later.</Note>
+
+## Usage
+
+```bash
+container network list [--format <format>] [--quiet] [--debug]
+```
+
+## Options
+
+<ParamField path="--format" type="string" default="table">
+  Format of the output (values: json, table)
+</ParamField>
+
+<ParamField path="-q, --quiet" type="boolean">
+  Only output the network name
+</ParamField>

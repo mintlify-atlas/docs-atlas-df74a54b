@@ -1,0 +1,18 @@
+---
+title: container system stop
+description: Stop the container services
+---
+
+Stops the container services and deregisters them from launchd. You can specify a prefix to target services created with a different launchd prefix.
+
+## Usage
+
+```bash
+container system stop [--prefix <prefix>] [--debug]
+```
+
+## Options
+
+<ParamField path="-p, --prefix" type="string" default="com.apple.container.">
+  Launchd prefix for services
+</ParamField>

@@ -1,0 +1,226 @@
+---
+title: container run
+description: Run a container from an image
+---
+
+Runs a container from an image. If a command is provided, it will execute inside the container; otherwise the image's default command runs. By default the container runs in the foreground and stdin remains closed unless `-i`/`--interactive` is specified.
+
+## Usage
+
+```bash
+container run [<options>] <image> [<arguments> ...]
+```
+
+## Arguments
+
+<ParamField path="image" type="string" required>
+  Image name
+</ParamField>
+
+<ParamField path="arguments" type="string[]">
+  Container init process arguments
+</ParamField>
+
+## Process options
+
+<ParamField path="-e, --env" type="string">
+  Set environment variables (format: key=value)
+</ParamField>
+
+<ParamField path="--env-file" type="string">
+  Read in a file of environment variables (key=value format, ignores # comments and blank lines)
+</ParamField>
+
+<ParamField path="--gid" type="number">
+  Set the group ID for the process
+</ParamField>
+
+<ParamField path="-i, --interactive" type="boolean">
+  Keep the standard input open even if not attached
+</ParamField>
+
+<ParamField path="-t, --tty" type="boolean">
+  Open a TTY with the process
+</ParamField>
+
+<ParamField path="-u, --user" type="string">
+  Set the user for the process (format: name|uid[:gid])
+</ParamField>
+
+<ParamField path="--uid" type="number">
+  Set the user ID for the process
+</ParamField>
+
+<ParamField path="-w, --workdir, --cwd" type="string">
+  Set the initial working directory inside the container
+</ParamField>
+
+## Resource options
+
+<ParamField path="-c, --cpus" type="number">
+  Number of CPUs to allocate to the container
+</ParamField>
+
+<ParamField path="-m, --memory" type="string">
+  Amount of memory (1MiByte granularity), with optional K, M, G, T, or P suffix
+</ParamField>
+
+## Management options
+
+<ParamField path="-a, --arch" type="string" default="arm64">
+  Set arch if image can target multiple architectures
+</ParamField>
+
+<ParamField path="--cidfile" type="string">
+  Write the container ID to the path provided
+</ParamField>
+
+<ParamField path="-d, --detach" type="boolean">
+  Run the container and detach from the process
+</ParamField>
+
+<ParamField path="--dns" type="string">
+  DNS nameserver IP address
+</ParamField>
+
+<ParamField path="--dns-domain" type="string">
+  Default DNS domain
+</ParamField>
+
+<ParamField path="--dns-option" type="string">
+  DNS options
+</ParamField>
+
+<ParamField path="--dns-search" type="string">
+  DNS search domains
+</ParamField>
+
+<ParamField path="--entrypoint" type="string">
+  Override the entrypoint of the image
+</ParamField>
+
+<ParamField path="--init" type="boolean">
+  Run an init process inside the container that forwards signals and reaps processes
+</ParamField>
+
+<ParamField path="--init-image" type="string">
+  Use a custom init image instead of the default. This allows customizing boot-time behavior before the OCI container starts, such as running VM-level daemons, configuring eBPF filters, or debugging the init process.
+</ParamField>
+
+<ParamField path="-k, --kernel" type="string">
+  Set a custom kernel path
+</ParamField>
+
+<ParamField path="-l, --label" type="string">
+  Add a key=value label to the container
+</ParamField>
+
+<ParamField path="--mount" type="string">
+  Add a mount to the container (format: `type=<>,source=<>,target=<>,readonly`)
+</ParamField>
+
+<ParamField path="--name" type="string">
+  Use the specified name as the container ID
+</ParamField>
+
+<ParamField path="--network" type="string">
+  Attach the container to a network
+</ParamField>
+
+<ParamField path="--no-dns" type="boolean">
+  Do not configure DNS in the container
+</ParamField>
+
+<ParamField path="--os" type="string" default="linux">
+  Set OS if image can target multiple operating systems
+</ParamField>
+
+<ParamField path="-p, --publish" type="string">
+  Publish a port from container to host (format: [host-ip:]host-port:container-port[/protocol])
+</ParamField>
+
+<ParamField path="--platform" type="string">
+  Platform for the image if it's multi-platform. This takes precedence over --os and --arch
+</ParamField>
+
+<ParamField path="--publish-socket" type="string">
+  Publish a socket from container to host (format: host_path:container_path)
+</ParamField>
+
+<ParamField path="--read-only" type="boolean">
+  Mount the container's root filesystem as read-only
+</ParamField>
+
+<ParamField path="--rm, --remove" type="boolean">
+  Remove the container after it stops
+</ParamField>
+
+<ParamField path="--rosetta" type="boolean">
+  Enable Rosetta in the container
+</ParamField>
+
+<ParamField path="--runtime" type="string" default="container-runtime-linux">
+  Set the runtime handler for the container
+</ParamField>
+
+<ParamField path="--ssh" type="boolean">
+  Forward SSH agent socket to container
+</ParamField>
+
+<ParamField path="--tmpfs" type="string">
+  Add a tmpfs mount to the container at the given path
+</ParamField>
+
+<ParamField path="-v, --volume" type="string">
+  Bind mount a volume into the container
+</ParamField>
+
+<ParamField path="--virtualization" type="boolean">
+  Expose virtualization capabilities to the container (requires host and guest support)
+</ParamField>
+
+## Registry options
+
+<ParamField path="--scheme" type="string" default="auto">
+  Scheme to use when connecting to the container registry. One of (http, https, auto)
+
+  **Behavior of `auto`**
+
+  When `auto` is selected, the target registry is considered **internal/local** if the registry host matches any of these criteria:
+  - The host is a loopback address (e.g., `localhost`, `127.*`)
+  - The host is within the `RFC1918` private IP ranges:
+    - `10.*.*.*`
+    - `192.168.*.*`
+    - `172.16.*.*` through `172.31.*.*`
+  - The host ends with the machine's default container DNS domain
+
+  For internal/local registries, the client uses **HTTP**. Otherwise, it uses **HTTPS**.
+</ParamField>
+
+## Progress options
+
+<ParamField path="--progress" type="string" default="ansi">
+  Progress type (format: none|ansi)
+</ParamField>
+
+## Examples
+
+```bash
+# run a container and attach an interactive shell
+container run -it ubuntu:latest /bin/bash
+
+# run a background web server
+container run -d --name web -p 8080:80 nginx:latest
+
+# set environment variables and limit resources
+container run -e NODE_ENV=production --cpus 2 --memory 1G node:18
+
+# run a container with a specific MAC address
+container run --network default,mac=02:42:ac:11:00:02 ubuntu:latest
+
+# run a container with an init process to reap zombies and forward signals
+container run --init ubuntu:latest my-app
+
+# run a container with a custom init image for boot customization
+container run --init-image local/custom-init:latest ubuntu:latest
+```

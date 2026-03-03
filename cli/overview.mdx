@@ -1,0 +1,103 @@
+---
+title: CLI overview
+description: Overview of the container CLI, common options, and getting help
+---
+
+The container CLI provides a complete set of commands for managing containers, images, networks, volumes, and system services.
+
+## Getting help
+
+You can get help for any command by using the `--help` flag:
+
+```bash
+container --help
+container run --help
+container image --help
+```
+
+## Common options
+
+Most commands support a `--debug` flag that provides additional diagnostic output:
+
+```bash
+container run --debug ubuntu:latest
+container list --debug
+```
+
+## Command categories
+
+### Core commands
+
+- `container run` - Run a container from an image
+- `container build` - Build an OCI image from a Dockerfile
+
+### Container management
+
+- `container create` - Create a container without starting it
+- `container start` - Start a stopped container
+- `container stop` - Stop running containers gracefully
+- `container kill` - Immediately kill running containers
+- `container delete` (`rm`) - Delete containers
+- `container list` (`ls`) - List containers
+- `container exec` - Execute a command in a running container
+- `container logs` - Fetch container logs
+- `container inspect` - Display detailed container information
+- `container stats` - Display real-time resource usage statistics
+- `container prune` - Remove stopped containers
+
+### Image management
+
+- `container image list` (`ls`) - List local images
+- `container image pull` - Pull an image from a registry
+- `container image push` - Push an image to a registry
+- `container image save` - Save an image to a tar archive
+- `container image load` - Load an image from a tar archive
+- `container image tag` - Tag an image
+- `container image delete` (`rm`) - Delete images
+- `container image prune` - Remove unused images
+- `container image inspect` - Display detailed image information
+
+### Builder management
+
+- `container builder start` - Start the BuildKit builder
+- `container builder status` - Show builder status
+- `container builder stop` - Stop the BuildKit builder
+- `container builder delete` (`rm`) - Delete the BuildKit builder
+
+### Network management (macOS 26+)
+
+- `container network create` - Create a network
+- `container network delete` (`rm`) - Delete networks
+- `container network prune` - Remove unused networks
+- `container network list` (`ls`) - List networks
+- `container network inspect` - Display detailed network information
+
+### Volume management
+
+- `container volume create` - Create a volume
+- `container volume delete` (`rm`) - Delete volumes
+- `container volume prune` - Remove unused volumes
+- `container volume list` (`ls`) - List volumes
+- `container volume inspect` - Display detailed volume information
+
+### Registry management
+
+- `container registry login` - Authenticate with a registry
+- `container registry logout` - Log out of a registry
+- `container registry list` - List registry logins
+
+### System management (macOS)
+
+- `container system start` - Start container services
+- `container system stop` - Stop container services
+- `container system status` - Check service status
+- `container system version` - Show version information
+- `container system logs` - Display system logs
+- `container system df` - Show disk usage
+- `container system dns` - Manage local DNS domains
+- `container system kernel` - Manage the Linux kernel
+- `container system property` - Manage system properties
+
+## Platform availability
+
+Command availability may vary depending on host operating system and macOS version. Network commands require macOS 26 or later.

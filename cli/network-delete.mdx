@@ -1,0 +1,26 @@
+---
+title: container network delete
+description: Delete one or more networks
+---
+
+Deletes one or more networks. When deleting multiple networks, pass them as separate arguments. To delete all networks, use `--all`.
+
+<Note>Network commands are available on macOS 26 and later.</Note>
+
+## Usage
+
+```bash
+container network delete [--all] [--debug] [<network-names> ...]
+```
+
+## Arguments
+
+<ParamField path="network-names" type="string[]">
+  Network names
+</ParamField>
+
+## Options
+
+<ParamField path="-a, --all" type="boolean">
+  Delete all networks
+</ParamField>

@@ -1,80 +1,272 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick start
+description: Build and run your first container with Container CLI
 ---
 
-## Get started in three steps
+# Quick start
 
-Get your documentation site running locally and make your first customization.
+This guide will get you up and running with Container CLI by building a simple web server image and running it as a container.
 
-### Step 1: Set up your local environment
+## Prerequisites
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+Before you begin, make sure you have [installed Container CLI](/installation) on your Mac with Apple silicon.
+
+## Start the container service
+
+First, start the services that `container` uses:
+
+```bash
+container system start
+```
+
+If you have not installed a Linux kernel yet, the command will prompt you to install one. Type `y` and press Enter to proceed.
+
+<Note>
+  You only need to start the container service once after each system restart. The service will continue running in the background.
+</Note>
+
+## Build your first image
+
+<Steps>
+  <Step title="Create a project directory">
+    Create a directory for your first container project:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```bash
+    mkdir web-test
+    cd web-test
+    ```
+  </Step>
+  
+  <Step title="Create a Dockerfile">
+    In the `web-test` directory, create a file named `Dockerfile` with this content:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    ```dockerfile
+    FROM docker.io/python:alpine
+    WORKDIR /content
+    RUN apk add curl
+    RUN echo '<!DOCTYPE html><html><head><title>Hello</title></head><body><h1>Hello, world!</h1></body></html>' > index.html
+    CMD ["python3", "-m", "http.server", "80", "--bind", "0.0.0.0"]
+    ```
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    This Dockerfile:
+    - Starts with a Python 3 base image
+    - Creates a `/content` directory
+    - Adds the `curl` command
+    - Creates a simple HTML landing page
+    - Configures the container to run a Python web server on port 80
+  </Step>
+  
+  <Step title="Build the image">
+    Run the `container build` command to create an image named `web-test`:
+    
+    ```bash
+    container build --tag web-test --file Dockerfile .
+    ```
+    
+    The `.` at the end tells the builder to use the current directory as the build context.
+  </Step>
+  
+  <Step title="Verify the image">
+    List your images to verify the build succeeded:
+    
+    ```bash
+    container image list
+    ```
+    
+    You should see both the base image and your newly built image:
+    
+    ```bash
+    % container image list
+    NAME      TAG     DIGEST
+    python    alpine  b4d299311845147e7e47c970...
+    web-test  latest  25b99501f174803e21c58f9c...
+    %
+    ```
+  </Step>
+</Steps>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Run your first container
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+<Steps>
+  <Step title="Start the container">
+    Use `container run` to start a container named `my-web-server`:
+    
+    ```bash
+    container run --name my-web-server --detach --rm web-test
+    ```
+    
+    The `--detach` flag runs the container in the background, and the `--rm` flag removes the container automatically after it stops.
+  </Step>
+  
+  <Step title="Check container status">
+    List running containers:
+    
+    ```bash
+    container list
+    ```
+    
+    You should see your web server container running:
+    
+    ```bash
+    % container ls
+    ID             IMAGE                                               OS     ARCH   STATE    ADDR
+    buildkit       ghcr.io/apple/container-builder-shim/builder:0.0.3  linux  arm64  running  192.168.64.2
+    my-web-server  web-test:latest                                     linux  arm64  running  192.168.64.3
+    %
+    ```
+    
+    <Note>
+      The `buildkit` container was automatically started to build your image. It remains running to speed up future builds.
+    </Note>
+  </Step>
+  
+  <Step title="Access the web server">
+    Open the website using the container's IP address from the `ADDR` column:
+    
+    ```bash
+    open http://192.168.64.3
+    ```
+    
+    You should see "Hello, world!" in your browser.
+  </Step>
+</Steps>
 
-### Step 3: Go live
+## Interact with your container
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+### Execute commands in the container
+
+Run commands inside your running container using `container exec`:
+
+```bash
+container exec my-web-server ls /content
+```
+
+Output:
+```bash
+% container exec my-web-server ls /content
+index.html
+%
+```
+
+### Open an interactive shell
+
+You can also run an interactive shell to explore the container:
+
+```bash
+container exec --tty --interactive my-web-server sh
+```
+
+This opens a shell prompt inside the container:
+
+```bash
+% container exec --tty --interactive my-web-server sh
+/content # ls
+index.html
+/content # uname -a
+Linux my-web-server 6.12.28 #1 SMP Tue May 20 15:19:05 UTC 2025 aarch64 Linux
+/content # exit
+%
+```
+
+<Note>
+  The `--tty` and `--interactive` flags (often abbreviated as `-ti` or `-it`) allow you to interact with the shell from your terminal.
+</Note>
+
+### Monitor resource usage
+
+Monitor your container's resource usage with the `container stats` command:
+
+```bash
+container stats --no-stream my-web-server
+```
+
+This displays CPU usage, memory consumption, network traffic, and more:
+
+```bash
+% container stats --no-stream my-web-server
+Container ID    Cpu %   Memory Usage          Net Rx/Tx            Block I/O            Pids
+my-web-server   0.23%   12.45 MiB / 1.00 GiB  856.00 KiB / 1.2 KiB 2.10 MiB / 512 KiB   2
+%
+```
+
+## Clean up
+
+When you're done, stop the container:
+
+```bash
+container stop my-web-server
+```
+
+Since you used the `--rm` flag when starting the container, it will be automatically removed after stopping.
+
+<Note>
+  To completely shut down Container CLI, run `container system stop`. This stops all containers and the container service.
+</Note>
+
+## Useful commands and abbreviations
+
+You can save keystrokes by abbreviating commands and options:
+
+<CodeGroup>
+
+```bash List containers
+# Full command
+container list --all
+
+# Abbreviated
+container ls -a
+```
+
+```bash Run container interactively
+# Full command
+container run --tty --interactive --rm
+
+# Abbreviated
+container run -it --rm
+```
+
+```bash Get help
+# Help for any command
+container --help
+container run --help
+```
+
+</CodeGroup>
+
+## Optional: Set up local DNS
+
+`container` includes an embedded DNS service that simplifies access to your containerized applications. To configure a local DNS domain named `test`:
+
+<Steps>
+  <Step title="Create the DNS domain">
+    Run this command (requires administrator password):
+    
+    ```bash
+    sudo container system dns create test
+    ```
+  </Step>
+  
+  <Step title="Set default domain">
+    Make `test` the default domain:
+    
+    ```bash
+    container system property set dns.domain test
+    ```
+  </Step>
+  
+  <Step title="Use DNS names">
+    Now you can access containers by name. For example, if you start a container with `--name my-web-server`, you can access it at:
+    
+    ```bash
+    open http://my-web-server.test
+    ```
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
+Now that you've built and run your first container, explore more features:
 
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+- **Take the full tutorial**: Learn how to [publish images to a registry and more](/guides/tutorial)
+- **Browse commands**: Check out the [command reference](/cli/overview) for all available commands
+- **Learn key concepts**: Read the [technical overview](/architecture/overview) to understand how Container CLI works

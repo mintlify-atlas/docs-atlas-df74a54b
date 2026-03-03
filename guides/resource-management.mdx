@@ -1,0 +1,432 @@
+---
+title: Resource management
+description: Learn how to configure and limit CPU and memory resources for containers and builders
+---
+
+This guide covers how to configure and limit CPU and memory resources for containers, builders, and monitor resource usage.
+
+## Understanding container resources
+
+Since the containers created by `container` are lightweight virtual machines, you can control the computational resources allocated to each container.
+
+<Info>
+Default resource limits:
+- **Containers**: 4 CPUs and 1 GB of RAM
+- **Builder**: 2 CPUs and 2 GB of RAM
+</Info>
+
+## Configuring container resources
+
+Use the `--cpus` and `--memory` options with `container run` or `container create` to set resource limits.
+
+### Memory configuration
+
+The `--memory` (or `-m`) option accepts values with unit suffixes:
+
+```bash
+# 1 gigabyte
+container run --memory 1G ubuntu:latest
+
+# 512 megabytes
+container run --memory 512M ubuntu:latest
+
+# 2 gigabytes
+container run -m 2g ubuntu:latest
+```
+
+<Note>
+Memory is specified with 1 MiByte granularity. Supported suffixes: K, M, G, T, P.
+</Note>
+
+### CPU configuration
+
+The `--cpus` (or `-c`) option specifies the number of CPUs to allocate:
+
+```bash
+# Allocate 2 CPUs
+container run --cpus 2 ubuntu:latest
+
+# Allocate 8 CPUs
+container run -c 8 ubuntu:latest
+```
+
+### Combined resource configuration
+
+Set both CPU and memory limits together:
+
+```bash
+container run --rm --cpus 8 --memory 32g big-app:latest
+```
+
+This allocates 8 CPUs and 32 GiB of memory to the container.
+
+## Resource limits for different workloads
+
+### Lightweight applications
+
+```bash
+# Minimal resources for simple tasks
+container run --cpus 1 --memory 256M alpine:latest echo "hello"
+```
+
+### Web servers
+
+```bash
+# Moderate resources for web applications
+container run -d \
+  --name web \
+  --cpus 2 \
+  --memory 1G \
+  -p 8080:80 \
+  nginx:latest
+```
+
+### Databases
+
+```bash
+# Higher resources for database workloads
+container run -d \
+  --name postgres \
+  --cpus 4 \
+  --memory 8G \
+  -v postgres-data:/var/lib/postgresql/data \
+  postgres:15
+```
+
+### Compute-intensive tasks
+
+```bash
+# Maximum resources for heavy computation
+container run --rm \
+  --cpus 16 \
+  --memory 64G \
+  ml-training:latest python train.py
+```
+
+## Monitoring resource usage
+
+The `container stats` command displays real-time resource usage statistics for containers.
+
+### Interactive monitoring
+
+```bash
+container stats
+```
+
+Displays live statistics for all running containers:
+
+```
+Container ID    Cpu %    Memory Usage           Net Rx/Tx              Block I/O               Pids
+my-web-server   2.45%    45.23 MiB / 1.00 GiB   1.23 MiB / 856.00 KiB  4.50 MiB / 2.10 MiB     3
+db              125.12%  512.50 MiB / 2.00 GiB  5.67 MiB / 3.21 MiB    125.00 MiB / 89.00 MiB  12
+```
+
+<Note>
+Without the `--no-stream` flag, `container stats` continuously updates the display in real-time, similar to the `top` command. Press Ctrl+C to exit the live view.
+</Note>
+
+### Monitoring specific containers
+
+```bash
+container stats my-web-server db
+```
+
+### Single snapshot
+
+Use `--no-stream` for a single snapshot (non-interactive):
+
+```bash
+container stats --no-stream my-web-server
+```
+
+```
+Container ID    Cpu %    Memory Usage          Net Rx/Tx              Block I/O              Pids
+my-web-server   30.45%   45.23 MiB / 1.00 GiB  1.23 MiB / 856.00 KiB  4.50 MiB / 2.10 MiB    3
+```
+
+### JSON output for automation
+
+```bash
+container stats --format json --no-stream my-web-server | jq
+```
+
+```json
+[
+  {
+    "id": "my-web-server",
+    "memoryUsageBytes": 47431680,
+    "memoryLimitBytes": 1073741824,
+    "cpuUsageUsec": 1234567,
+    "networkRxBytes": 1289011,
+    "networkTxBytes": 876544,
+    "blockReadBytes": 4718592,
+    "blockWriteBytes": 2202009,
+    "numProcesses": 3
+  }
+]
+```
+
+## Understanding metrics
+
+<Tabs>
+  <Tab title="CPU usage">
+    **Cpu %**: Percentage of CPU usage
+
+    - ~100% = one fully utilized core
+    - A multi-core container can show > 100%
+    - Example: 400% means 4 cores at full capacity
+
+    <Info>
+    If a container shows consistently high CPU usage near its limit, consider increasing the `--cpus` allocation.
+    </Info>
+  </Tab>
+
+  <Tab title="Memory usage">
+    **Memory Usage**: Current memory usage vs. the container's memory limit
+
+    Format: `current / limit`
+
+    Example: `512.50 MiB / 2.00 GiB` means the container is using 512.5 MB out of 2 GB allocated.
+
+    <Warning>
+    If memory usage consistently approaches the limit, the container may experience out-of-memory errors. Increase the `--memory` allocation if needed.
+    </Warning>
+  </Tab>
+
+  <Tab title="Network I/O">
+    **Net Rx/Tx**: Network bytes received and transmitted
+
+    - **Rx**: Data received by the container
+    - **Tx**: Data transmitted by the container
+
+    Useful for monitoring network-intensive applications.
+  </Tab>
+
+  <Tab title="Block I/O">
+    **Block I/O**: Disk bytes read and written
+
+    - **Read**: Data read from disk
+    - **Write**: Data written to disk
+
+    High block I/O may indicate disk-intensive operations like database queries or file processing.
+  </Tab>
+
+  <Tab title="Process count">
+    **Pids**: Number of processes running in the container
+
+    A sudden increase in process count may indicate:
+    - Forking applications (like web servers under load)
+    - Process leaks
+    - Zombies (if `--init` is not used)
+  </Tab>
+</Tabs>
+
+## Configuring builder resources
+
+When you first run `container build`, `container` starts a builder container. For resource-intensive builds, you may need to increase the memory and CPU limits for the builder VM.
+
+### Default builder resources
+
+<Info>
+By default, the builder VM receives 2 GiB of RAM and 2 CPUs.
+</Info>
+
+### Starting the builder with custom resources
+
+```bash
+container builder start --cpus 8 --memory 32g
+```
+
+### Reconfiguring an existing builder
+
+If your builder is already running and you need to modify the limits:
+
+```bash
+container builder stop
+container builder delete
+container builder start --cpus 8 --memory 32g
+```
+
+### Setting resources during build
+
+You can also specify builder resources directly in the `container build` command:
+
+```bash
+container build --cpus 8 --memory 32g --tag my-app:latest .
+```
+
+<Note>
+The `--cpus` and `--memory` flags in `container build` configure the builder container, not the resulting image.
+</Note>
+
+### When to increase builder resources
+
+Consider increasing builder resources when:
+
+- Building large applications with many dependencies
+- Compiling native code (C, C++, Rust, Go)
+- Running parallel build tasks
+- Building multiplatform images
+- Experiencing build timeouts or out-of-memory errors
+
+<Tip>
+Monitor builder resource usage during builds:
+
+```bash
+# In one terminal, start your build
+container build --tag my-app .
+
+# In another terminal, watch builder stats
+container stats buildkit
+```
+</Tip>
+
+## Resource optimization strategies
+
+### Right-sizing resources
+
+<Steps>
+  <Step title="Start with defaults">
+    Begin with default resource allocations and monitor usage:
+
+    ```bash
+    container run -d --name app my-app:latest
+    container stats app
+    ```
+  </Step>
+
+  <Step title="Monitor under load">
+    Run your application under realistic load and observe resource consumption:
+
+    ```bash
+    # Watch stats continuously
+    container stats --no-stream app
+    ```
+  </Step>
+
+  <Step title="Adjust based on metrics">
+    If CPU usage consistently exceeds 80% or memory approaches the limit:
+
+    ```bash
+    # Stop the container
+    container stop app
+    container delete app
+
+    # Restart with increased resources
+    container run -d --name app --cpus 4 --memory 2G my-app:latest
+    ```
+  </Step>
+
+  <Step title="Verify improvements">
+    Monitor again to verify the adjustments:
+
+    ```bash
+    container stats app
+    ```
+  </Step>
+</Steps>
+
+### Avoiding over-allocation
+
+<Warning>
+Over-allocating resources wastes system memory and CPU. Allocate just enough to handle peak loads with some headroom.
+</Warning>
+
+**Best practices**:
+
+- Don't allocate more CPUs than your host has
+- Leave some memory for the host OS and other processes
+- Monitor actual usage rather than guessing
+- Test under realistic workload conditions
+
+### Resource isolation
+
+Use resource limits to prevent one container from consuming all available resources:
+
+```bash
+# Limit each service to specific resources
+container run -d --name web --cpus 2 --memory 1G web:latest
+container run -d --name api --cpus 2 --memory 2G api:latest
+container run -d --name db --cpus 4 --memory 4G postgres:15
+```
+
+This ensures fair resource distribution across multiple containers.
+
+## Disk space management
+
+While CPU and memory are configured per-container, disk space is managed at the system level.
+
+### Checking disk usage
+
+```bash
+container system df
+```
+
+Shows disk usage for images, containers, and volumes including:
+- Total count
+- Active count
+- Size
+- Reclaimable space
+
+### Reclaiming disk space
+
+```bash
+# Remove stopped containers
+container prune
+
+# Remove unused images
+container image prune
+
+# Remove unused volumes
+container volume prune
+```
+
+<Tip>
+Run these commands periodically to keep disk usage under control, especially in development environments where images and containers are created frequently.
+</Tip>
+
+## Advanced resource scenarios
+
+### Multiplatform builds
+
+Building for multiple architectures requires more resources:
+
+```bash
+container build \
+  --arch arm64 \
+  --arch amd64 \
+  --cpus 8 \
+  --memory 16G \
+  --tag registry.example.com/my-app:latest .
+```
+
+### Nested virtualization
+
+<Note>
+This feature requires an M3 or newer Apple silicon machine and a Linux kernel that supports virtualization.
+</Note>
+
+Containers with virtualization capabilities may need additional resources:
+
+```bash
+container run \
+  --name nested-vm \
+  --virtualization \
+  --cpus 8 \
+  --memory 16G \
+  --kernel /path/to/virtualization-kernel \
+  ubuntu:latest
+```
+
+### Custom init images
+
+When using custom init images with additional daemons, allocate extra resources:
+
+```bash
+container run \
+  --name custom-init-container \
+  --init-image local/custom-init:latest \
+  --cpus 4 \
+  --memory 4G \
+  my-app:latest
+```

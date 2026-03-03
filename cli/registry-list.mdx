@@ -1,0 +1,39 @@
+---
+title: container registry list
+description: List image registry logins
+---
+
+List image registry logins.
+
+## Usage
+
+```bash
+container registry list [--format <format>] [--quiet] [--debug]
+```
+
+## Options
+
+<ParamField path="--format" type="string" default="table">
+  Format of the output. One of: `json`, `table`
+</ParamField>
+
+<ParamField path="-q, --quiet" type="boolean">
+  Only output the image registry name
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug mode
+</ParamField>
+
+## Examples
+
+```bash
+# list all registry logins in table format
+container registry list
+
+# list registry names only
+container registry list --quiet
+
+# output registry logins as JSON
+container registry list --format json
+```

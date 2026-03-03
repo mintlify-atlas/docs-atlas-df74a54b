@@ -1,0 +1,28 @@
+---
+title: container kill
+description: Immediately kill running containers
+---
+
+Immediately kills running containers by sending a signal (defaults to `KILL`). Use with caution: it does not allow for graceful shutdown.
+
+## Usage
+
+```bash
+container kill [--all] [--signal <signal>] [--debug] [<container-ids> ...]
+```
+
+## Arguments
+
+<ParamField path="container-ids" type="string[]">
+  Container IDs
+</ParamField>
+
+## Options
+
+<ParamField path="-a, --all" type="boolean">
+  Kill or signal all running containers
+</ParamField>
+
+<ParamField path="-s, --signal" type="string" default="KILL">
+  Signal to send to the container(s)
+</ParamField>

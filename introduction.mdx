@@ -1,0 +1,72 @@
+---
+title: Introduction
+description: Create and run Linux containers as lightweight virtual machines on your Mac with Container CLI
+---
+
+# Container CLI
+
+`container` is a tool that you can use to create and run Linux containers as lightweight virtual machines on your Mac. It's written in Swift, and optimized for Apple silicon.
+
+The tool consumes and produces [OCI-compatible container images](https://github.com/opencontainers/image-spec), so you can pull and run images from any standard container registry. You can push images that you build to those registries as well, and run the images in any other OCI-compatible application.
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="OCI compatible" icon="box">
+    Pull and run images from any standard container registry. Push your built images to share with others.
+  </Card>
+  
+  <Card title="Apple silicon optimized" icon="microchip">
+    Written in Swift and optimized specifically for Mac with Apple silicon processors.
+  </Card>
+  
+  <Card title="Lightweight VMs" icon="server">
+    Run Linux containers as lightweight virtual machines with efficient resource usage.
+  </Card>
+  
+  <Card title="Built-in DNS" icon="network-wired">
+    Embedded DNS service simplifies access to your containerized applications.
+  </Card>
+</CardGroup>
+
+## How it works
+
+`container` uses the [Containerization](https://github.com/apple/containerization) Swift package for low level container, image, and process management. It leverages new features and enhancements to virtualization and networking in macOS 26 to provide a seamless container experience on Mac.
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Download and install Container CLI on your Mac with Apple silicon
+  </Card>
+  
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Build and run your first container in minutes
+  </Card>
+  
+  <Card title="Tutorial" icon="book" href="/tutorial">
+    Take a guided tour by building a simple web server image
+  </Card>
+  
+  <Card title="Command reference" icon="terminal" href="/command-reference">
+    Browse the full CLI command reference
+  </Card>
+</CardGroup>
+
+## Requirements
+
+<Note>
+  You need a Mac with Apple silicon to run `container`. The tool is supported on macOS 26, since it takes advantage of new features and enhancements to virtualization and networking in this release.
+</Note>
+
+Older versions of macOS are not supported and the `container` maintainers typically will not address issues that cannot be reproduced on macOS 26.
+
+## Project status
+
+<Warning>
+  The container project is currently under active development. Its stability is only guaranteed within patch versions, such as between 0.1.1 and 0.1.2. Minor version number releases may include breaking changes until we achieve a 1.0.0 release.
+</Warning>
+
+## Next steps
+
+Ready to get started? Head over to the [installation guide](/installation) to set up Container CLI on your Mac.

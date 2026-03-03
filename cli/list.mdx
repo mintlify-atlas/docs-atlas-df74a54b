@@ -1,0 +1,28 @@
+---
+title: container list
+description: List containers
+---
+
+Lists containers. By default only running containers are shown. Output can be formatted as a table or JSON.
+
+## Usage
+
+```bash
+container list [--all] [--format <format>] [--quiet] [--debug]
+```
+
+Alias: `container ls`
+
+## Options
+
+<ParamField path="-a, --all" type="boolean">
+  Include containers that are not running
+</ParamField>
+
+<ParamField path="--format" type="string" default="table">
+  Format of the output (values: json, table)
+</ParamField>
+
+<ParamField path="-q, --quiet" type="boolean">
+  Only output the container ID
+</ParamField>

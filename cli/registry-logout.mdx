@@ -1,0 +1,34 @@
+---
+title: container registry logout
+description: Log out of a container registry
+---
+
+Logs out of a registry, removing stored credentials.
+
+## Usage
+
+```bash
+container registry logout [--debug] <registry>
+```
+
+## Arguments
+
+<ParamField path="registry" type="string" required>
+  Registry server name
+</ParamField>
+
+## Options
+
+<ParamField path="--debug" type="boolean">
+  Enable debug mode
+</ParamField>
+
+## Examples
+
+```bash
+# logout from a registry
+container registry logout registry.example.com
+
+# logout from Docker Hub
+container registry logout docker.io
+```
