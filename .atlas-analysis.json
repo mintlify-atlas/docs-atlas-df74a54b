@@ -1,0 +1,162 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "Container",
+  "projectDescription": "Create and run Linux containers as lightweight virtual machines on macOS with Apple silicon.",
+  "theme": "aspen",
+  "primaryColor": "#007AFF",
+  "lightColor": "#5AC8FA",
+  "darkColor": "#0A84FF",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/tutorial",
+              "guides/working-with-containers",
+              "guides/working-with-images",
+              "guides/networking",
+              "guides/volumes-and-storage",
+              "guides/resource-management"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "cli/overview"
+            ]
+          },
+          {
+            "group": "Container Commands",
+            "pages": [
+              "cli/run",
+              "cli/create",
+              "cli/start",
+              "cli/stop",
+              "cli/exec",
+              "cli/list",
+              "cli/inspect",
+              "cli/logs",
+              "cli/delete",
+              "cli/kill"
+            ]
+          },
+          {
+            "group": "Image Commands",
+            "pages": [
+              "cli/build",
+              "cli/image-list",
+              "cli/image-pull",
+              "cli/image-push",
+              "cli/image-tag",
+              "cli/image-remove",
+              "cli/image-inspect"
+            ]
+          },
+          {
+            "group": "System Commands",
+            "pages": [
+              "cli/system-start",
+              "cli/system-stop",
+              "cli/system-version",
+              "cli/system-property"
+            ]
+          },
+          {
+            "group": "Network Commands",
+            "pages": [
+              "cli/network-create",
+              "cli/network-list",
+              "cli/network-inspect",
+              "cli/network-delete"
+            ]
+          },
+          {
+            "group": "Builder Commands",
+            "pages": [
+              "cli/builder-start",
+              "cli/builder-stop",
+              "cli/builder-delete"
+            ]
+          },
+          {
+            "group": "Registry Commands",
+            "pages": [
+              "cli/registry-login",
+              "cli/registry-logout",
+              "cli/registry-list"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Architecture",
+        "groups": [
+          {
+            "group": "Technical Details",
+            "pages": [
+              "architecture/overview",
+              "architecture/virtualization",
+              "architecture/services"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "development/building",
+              "development/testing",
+              "development/debugging",
+              "development/contributing"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Run Linux containers as lightweight VMs on Apple silicon",
+    "OCI-compatible container images",
+    "Per-container virtualization for enhanced security",
+    "Build images from Dockerfiles",
+    "Virtual networking and port forwarding",
+    "Volume mounting and data persistence",
+    "Multi-architecture image support (arm64/amd64)",
+    "Integration with macOS Virtualization framework"
+  ],
+  "publicApiSurface": [
+    "container run",
+    "container build",
+    "container create",
+    "container start",
+    "container stop",
+    "container exec",
+    "container list",
+    "container inspect",
+    "container logs",
+    "container delete",
+    "container image pull",
+    "container image push",
+    "container image list",
+    "container system start",
+    "container system stop",
+    "container network create",
+    "container network list",
+    "container builder start",
+    "container registry login"
+  ]
+}
