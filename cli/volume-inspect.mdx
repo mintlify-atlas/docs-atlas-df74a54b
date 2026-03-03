@@ -1,0 +1,52 @@
+---
+title: container volume inspect
+description: Display detailed information about volumes
+---
+
+Displays detailed information for one or more volumes in JSON.
+
+## Usage
+
+```bash
+container volume inspect [--debug] <names> ...
+```
+
+## Arguments
+
+<ParamField path="names" type="string" required>
+  Volume names (can specify multiple)
+</ParamField>
+
+## Options
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Inspect a single volume
+container volume inspect my-data
+
+# Inspect multiple volumes
+container volume inspect vol1 vol2 vol3
+```
+
+## Output
+
+The command returns JSON with detailed volume information including:
+- Volume name
+- Creation time
+- Mount point
+- Labels
+- Driver options
+- Size (if specified)
+
+<Tip>
+  Pipe the output to `jq` for formatted JSON viewing:
+  
+  ```bash
+  container volume inspect my-data | jq
+  ```
+</Tip>

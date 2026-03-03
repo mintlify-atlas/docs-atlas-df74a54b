@@ -64,8 +64,10 @@
               "cli/list",
               "cli/inspect",
               "cli/logs",
+              "cli/stats",
               "cli/delete",
-              "cli/kill"
+              "cli/kill",
+              "cli/prune"
             ]
           },
           {
@@ -77,7 +79,10 @@
               "cli/image-push",
               "cli/image-tag",
               "cli/image-remove",
-              "cli/image-inspect"
+              "cli/image-inspect",
+              "cli/image-save",
+              "cli/image-load",
+              "cli/image-prune"
             ]
           },
           {
@@ -85,8 +90,13 @@
             "pages": [
               "cli/system-start",
               "cli/system-stop",
+              "cli/system-status",
               "cli/system-version",
-              "cli/system-property"
+              "cli/system-logs",
+              "cli/system-df",
+              "cli/system-property",
+              "cli/system-kernel",
+              "cli/system-dns"
             ]
           },
           {
@@ -95,13 +105,15 @@
               "cli/network-create",
               "cli/network-list",
               "cli/network-inspect",
-              "cli/network-delete"
+              "cli/network-delete",
+              "cli/network-prune"
             ]
           },
           {
             "group": "Builder Commands",
             "pages": [
               "cli/builder-start",
+              "cli/builder-status",
               "cli/builder-stop",
               "cli/builder-delete"
             ]
@@ -112,6 +124,16 @@
               "cli/registry-login",
               "cli/registry-logout",
               "cli/registry-list"
+            ]
+          },
+          {
+            "group": "Volume Commands",
+            "pages": [
+              "cli/volume-create",
+              "cli/volume-list",
+              "cli/volume-inspect",
+              "cli/volume-delete",
+              "cli/volume-prune"
             ]
           }
         ]

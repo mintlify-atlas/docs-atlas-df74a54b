@@ -1,0 +1,40 @@
+---
+title: container image load
+description: Load images from a tar archive
+---
+
+Loads images from a tar archive created by `image save`. The tar file must be specified via `--input`.
+
+## Usage
+
+```bash
+container image load --input <input> [--force] [--debug]
+```
+
+## Options
+
+<ParamField path="-i, --input" type="string" required>
+  Path to the image tar archive
+</ParamField>
+
+<ParamField path="-f, --force" type="boolean">
+  Load images even if invalid member files are detected
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Load images from a tar file
+container image load --input my-app.tar
+
+# Force load even with invalid files
+container image load --input images.tar --force
+```
+
+<Note>
+  The loaded images will be available in your local image store with their original tags.
+</Note>

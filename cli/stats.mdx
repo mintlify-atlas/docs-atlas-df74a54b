@@ -1,0 +1,63 @@
+---
+title: container stats
+description: Display real-time resource usage statistics for containers
+---
+
+Displays real-time resource usage statistics for containers. Shows CPU percentage, memory usage, network I/O, block I/O, and process count. By default, continuously updates statistics in an interactive display (like `top`). Use `--no-stream` for a single snapshot.
+
+## Usage
+
+```bash
+container stats [--format <format>] [--no-stream] [--debug] [<container-ids> ...]
+```
+
+## Arguments
+
+<ParamField path="container-ids" type="string">
+  Container IDs or names (optional, shows all running containers if not specified)
+</ParamField>
+
+## Options
+
+<ParamField path="--format" type="string" default="table">
+  Format of the output (values: json, table)
+</ParamField>
+
+<ParamField path="--no-stream" type="boolean">
+  Disable streaming stats and only pull the first result
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Show stats for all running containers (interactive)
+container stats
+
+# Show stats for specific containers
+container stats web db cache
+
+# Get a single snapshot of stats (non-interactive)
+container stats --no-stream web
+
+# Output stats in JSON format
+container stats --format json
+```
+
+## Output
+
+The stats command displays:
+
+- **Container ID** - Container name or ID
+- **CPU %** - CPU usage percentage
+- **Memory Usage** - Current memory usage and limit
+- **Net Rx/Tx** - Network bytes received and transmitted
+- **Block I/O** - Disk read and write
+- **Pids** - Number of processes running in the container
+
+<Note>
+  Use `Ctrl+C` to exit the interactive stats display.
+</Note>

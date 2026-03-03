@@ -1,0 +1,41 @@
+---
+title: container network prune
+description: Remove unused networks
+---
+
+Removes networks not connected to any containers. However, default and system networks are preserved.
+
+## Usage
+
+```bash
+container network prune [--debug]
+```
+
+## Options
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Remove all unused networks
+container network prune
+```
+
+## Behavior
+
+This command will:
+- Remove all user-created networks not connected to any containers
+- Preserve the default network
+- Preserve system networks
+- Display the networks that were removed
+
+<Note>
+  Only user-defined networks can be pruned. The default network is always preserved.
+</Note>
+
+<Tip>
+  Run this command periodically to clean up orphaned networks and keep your network configuration tidy.
+</Tip>

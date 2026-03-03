@@ -1,0 +1,53 @@
+---
+title: container system logs
+description: Display logs from container services
+---
+
+Displays logs from the container services. You can specify a time interval or follow new logs in real time.
+
+## Usage
+
+```bash
+container system logs [--follow] [--last <last>] [--debug]
+```
+
+## Options
+
+<ParamField path="-f, --follow" type="boolean">
+  Follow log output
+</ParamField>
+
+<ParamField path="--last" type="string" default="5m">
+  Fetch logs starting from the specified time period (minus the current time); supported formats: m, h, d
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# View logs from the last 5 minutes (default)
+container system logs
+
+# View logs from the last hour
+container system logs --last 1h
+
+# View logs from the last day
+container system logs --last 1d
+
+# Follow logs in real-time
+container system logs --follow
+
+# View last 30 minutes and follow new logs
+container system logs --last 30m --follow
+```
+
+<Note>
+  Use `Ctrl+C` to exit when following logs.
+</Note>
+
+<Tip>
+  System logs are useful for troubleshooting service startup issues and debugging container operations.
+</Tip>

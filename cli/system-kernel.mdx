@@ -1,0 +1,62 @@
+---
+title: container system kernel set
+description: Install or update the Linux kernel
+---
+
+Installs or updates the Linux kernel used by the container runtime on macOS hosts.
+
+## Usage
+
+```bash
+container system kernel set [--arch <arch>] [--binary <binary>] [--force] [--recommended] [--tar <tar>] [--debug]
+```
+
+## Options
+
+<ParamField path="--arch" type="string" default="arm64">
+  The architecture of the kernel binary (values: amd64, arm64)
+</ParamField>
+
+<ParamField path="--binary" type="string">
+  Path to the kernel file (or archive member, if used with --tar)
+</ParamField>
+
+<ParamField path="--force" type="boolean">
+  Overwrites an existing kernel with the same name
+</ParamField>
+
+<ParamField path="--recommended" type="boolean">
+  Download and install the recommended kernel as the default (takes precedence over all other flags)
+</ParamField>
+
+<ParamField path="--tar" type="string">
+  Filesystem path or remote URL to a tar archive containing a kernel file
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Install the recommended kernel
+container system kernel set --recommended
+
+# Install a kernel from a local file
+container system kernel set --binary /path/to/vmlinuz
+
+# Install a kernel from a tar archive
+container system kernel set --tar /path/to/kernel.tar.xz --binary vmlinuz
+
+# Force overwrite existing kernel
+container system kernel set --binary /path/to/vmlinuz --force
+```
+
+<Note>
+  The recommended kernel is automatically selected based on your system's architecture.
+</Note>
+
+<Warning>
+  Changing the kernel requires stopping all containers and restarting the container service.
+</Warning>

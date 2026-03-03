@@ -1,0 +1,40 @@
+---
+title: container volume prune
+description: Remove unused volumes
+---
+
+Removes all volumes that have no container references. This includes volumes that are not attached to any running or stopped containers. The command reports the actual disk space reclaimed after deletion.
+
+## Usage
+
+```bash
+container volume prune [--debug]
+```
+
+## Options
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Remove all unused volumes
+container volume prune
+```
+
+## Behavior
+
+This command will:
+- Remove all volumes not referenced by any container (running or stopped)
+- Display the amount of disk space reclaimed
+- Preserve all volumes currently in use
+
+<Warning>
+  This operation cannot be undone. Make sure you don't need the data in unused volumes before pruning.
+</Warning>
+
+<Tip>
+  Run this command periodically to clean up orphaned volumes and reclaim disk space.
+</Tip>

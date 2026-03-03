@@ -1,0 +1,66 @@
+---
+title: container volume create
+description: Create a new named volume
+---
+
+Creates a new named volume with an optional size and driver-specific options.
+
+## Usage
+
+```bash
+container volume create [--label <label> ...] [--opt <opt> ...] [-s <s>] [--debug] <name>
+```
+
+## Arguments
+
+<ParamField path="name" type="string" required>
+  Volume name
+</ParamField>
+
+## Options
+
+<ParamField path="--label" type="string">
+  Set metadata for a volume (can be specified multiple times)
+</ParamField>
+
+<ParamField path="--opt" type="string">
+  Set driver specific options (can be specified multiple times)
+</ParamField>
+
+<ParamField path="-s" type="string">
+  Size of the volume in bytes, with optional K, M, G, T, or P suffix
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Create a simple named volume
+container volume create my-data
+
+# Create a volume with a specific size
+container volume create -s 10G my-large-data
+
+# Create a volume with labels
+container volume create --label project=web --label env=prod web-data
+```
+
+## Anonymous volumes
+
+Anonymous volumes are auto-created when using `-v /path` or `--mount type=volume,dst=/path` without specifying a source. They use UUID-based naming (`anon-{36-char-uuid}`):
+
+```bash
+# Creates anonymous volume
+container run -v /data alpine
+
+# Reuse anonymous volume by ID
+VOL=$(container volume list -q | grep anon)
+container run -v $VOL:/data alpine
+```
+
+<Info>
+  Named volumes persist even after containers are deleted, making them ideal for database storage and application data.
+</Info>

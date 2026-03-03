@@ -1,0 +1,44 @@
+---
+title: container volume list
+description: List volumes
+---
+
+Lists volumes.
+
+## Usage
+
+```bash
+container volume list [--format <format>] [--quiet] [--debug]
+```
+
+Alias: `container volume ls`
+
+## Options
+
+<ParamField path="--format" type="string" default="table">
+  Format of the output (values: json, table)
+</ParamField>
+
+<ParamField path="-q, --quiet" type="boolean">
+  Only output the volume name
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# List all volumes
+container volume list
+
+# List volumes in JSON format
+container volume list --format json
+
+# Get only volume names
+container volume list --quiet
+
+# Using alias
+container volume ls
+```

@@ -1,0 +1,57 @@
+---
+title: container image save
+description: Save an image to a tar archive
+---
+
+Saves an image to a tar archive on disk. Useful for exporting images for offline transport.
+
+## Usage
+
+```bash
+container image save [--arch <arch>] [--os <os>] --output <output> [--platform <platform>] [--debug] <references> ...
+```
+
+## Arguments
+
+<ParamField path="references" type="string" required>
+  Image references to save
+</ParamField>
+
+## Options
+
+<ParamField path="-a, --arch" type="string">
+  Architecture for the saved image
+</ParamField>
+
+<ParamField path="--os" type="string">
+  OS for the saved image
+</ParamField>
+
+<ParamField path="-o, --output" type="string" required>
+  Pathname for the saved image
+</ParamField>
+
+<ParamField path="--platform" type="string">
+  Platform for the saved image (format: `os/arch[/variant]`, takes precedence over --os and --arch)
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Save an image to a tar file
+container image save --output my-app.tar my-app:latest
+
+# Save a specific platform variant
+container image save --platform linux/amd64 --output my-app-amd64.tar my-app:latest
+
+# Save multiple images to one archive
+container image save --output images.tar nginx:latest alpine:latest
+```
+
+<Info>
+  Saved images can be loaded on another system using `container image load`.
+</Info>

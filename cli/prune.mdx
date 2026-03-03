@@ -1,0 +1,40 @@
+---
+title: container prune
+description: Remove stopped containers to reclaim disk space
+---
+
+Removes stopped containers to reclaim disk space. The command outputs the amount of space freed after deletion.
+
+## Usage
+
+```bash
+container prune [--debug]
+```
+
+## Options
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Remove all stopped containers
+container prune
+```
+
+## Behavior
+
+This command will:
+- Remove all containers that are not currently running
+- Display the amount of disk space reclaimed
+- Preserve all running containers
+
+<Warning>
+  This operation cannot be undone. Make sure you don't need any stopped containers before running this command.
+</Warning>
+
+<Tip>
+  Regularly running `container prune` helps keep your system clean and frees up disk space.
+</Tip>

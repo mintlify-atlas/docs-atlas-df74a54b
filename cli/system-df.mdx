@@ -1,0 +1,46 @@
+---
+title: container system df
+description: Show disk usage
+---
+
+Shows disk usage for images, containers, and volumes. Displays total count, active count, size, and reclaimable space for each resource type.
+
+## Usage
+
+```bash
+container system df [--format <format>] [--debug]
+```
+
+## Options
+
+<ParamField path="--format" type="string" default="table">
+  Format of the output (values: json, table)
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Show disk usage summary
+container system df
+
+# Show disk usage in JSON format
+container system df --format json
+```
+
+## Output
+
+The command displays:
+
+- **Type** - Resource type (Images, Containers, Volumes)
+- **Total** - Total number of resources
+- **Active** - Number of resources currently in use
+- **Size** - Total disk space used
+- **Reclaimable** - Disk space that can be freed by pruning
+
+<Tip>
+  Use `container prune`, `container image prune`, and `container volume prune` to reclaim space shown in the Reclaimable column.
+</Tip>

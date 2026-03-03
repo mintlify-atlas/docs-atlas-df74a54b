@@ -1,0 +1,43 @@
+---
+title: container system status
+description: Check container services status
+---
+
+Checks whether the container services are running and prints status information. It sends a health check request to the API server, which returns basic system information.
+
+## Usage
+
+```bash
+container system status [--prefix <prefix>] [--format <format>] [--debug]
+```
+
+## Options
+
+<ParamField path="-p, --prefix" type="string" default="com.apple.container.">
+  Launchd prefix for services
+</ParamField>
+
+<ParamField path="--format" type="string" default="table">
+  Format of the output (values: json, table)
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Check system status
+container system status
+
+# Check status with JSON output
+container system status --format json
+
+# Check status with custom prefix
+container system status --prefix my.custom.prefix
+```
+
+<Info>
+  This command verifies that the container API server is running and responsive.
+</Info>

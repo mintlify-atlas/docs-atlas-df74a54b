@@ -1,0 +1,54 @@
+---
+title: container volume delete
+description: Delete one or more volumes
+---
+
+Deletes one or more volumes by name. Volumes that are currently in use by containers (running or stopped) cannot be deleted.
+
+## Usage
+
+```bash
+container volume delete [--all] [--debug] [<names> ...]
+```
+
+Alias: `container volume rm`
+
+## Arguments
+
+<ParamField path="names" type="string">
+  Volume names (can specify multiple)
+</ParamField>
+
+## Options
+
+<ParamField path="-a, --all" type="boolean">
+  Delete all volumes
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Delete a specific volume
+container volume delete myvolume
+
+# Delete multiple volumes
+container volume delete vol1 vol2 vol3
+
+# Delete all unused volumes
+container volume delete --all
+
+# Using alias
+container volume rm myvolume
+```
+
+<Warning>
+  Volumes cannot be deleted if they are in use by any container (running or stopped). Remove the container first, or use `container volume prune` to remove only unused volumes.
+</Warning>
+
+<Note>
+  Deleting a volume permanently removes its data. This operation cannot be undone.
+</Note>

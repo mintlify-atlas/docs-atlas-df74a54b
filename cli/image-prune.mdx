@@ -1,0 +1,50 @@
+---
+title: container image prune
+description: Remove unused images to reclaim disk space
+---
+
+Removes unused images to reclaim disk space. By default, only removes dangling images (images with no tags). Use `-a` to remove all images not referenced by any container.
+
+## Usage
+
+```bash
+container image prune [--all] [--debug]
+```
+
+## Options
+
+<ParamField path="-a, --all" type="boolean">
+  Remove all unused images, not just dangling ones
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Remove dangling images only
+container image prune
+
+# Remove all unused images
+container image prune --all
+```
+
+## Behavior
+
+**Without `--all`:**
+- Only removes dangling images (untagged images)
+- Preserves all tagged images
+
+**With `--all`:**
+- Removes all images not referenced by any container (running or stopped)
+- Includes both tagged and untagged images
+
+<Warning>
+  Images removed with `--all` cannot be recovered. Ensure you don't need them before pruning.
+</Warning>
+
+<Tip>
+  Run this command regularly to keep your image cache clean and free up disk space.
+</Tip>

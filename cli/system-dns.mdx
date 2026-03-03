@@ -1,0 +1,97 @@
+---
+title: container system dns
+description: Manage local DNS domains for containers
+---
+
+Manage local DNS domains for containers. Allows creating, listing, and deleting DNS domains.
+
+## Subcommands
+
+### create
+
+Creates a local DNS domain for containers. Requires administrator privileges (use sudo).
+
+**Usage:**
+```bash
+container system dns create [--debug] <domain-name>
+```
+
+**Arguments:**
+- `<domain-name>` - The local domain name
+
+**Example:**
+```bash
+sudo container system dns create test
+```
+
+### list
+
+Lists configured local DNS domains for containers.
+
+**Usage:**
+```bash
+container system dns list [--debug]
+```
+
+Alias: `container system dns ls`
+
+**Example:**
+```bash
+container system dns list
+```
+
+### delete
+
+Deletes a local DNS domain. Requires administrator privileges (use sudo).
+
+**Usage:**
+```bash
+container system dns delete [--debug] <domain-name>
+```
+
+Alias: `container system dns rm`
+
+**Arguments:**
+- `<domain-name>` - The local domain name
+
+**Example:**
+```bash
+sudo container system dns delete test
+```
+
+## Common workflow
+
+<Steps>
+  <Step title="Create a DNS domain">
+    Create a local DNS domain (requires sudo):
+    
+    ```bash
+    sudo container system dns create test
+    ```
+  </Step>
+  
+  <Step title="Set as default domain">
+    Make it the default domain for containers:
+    
+    ```bash
+    container system property set dns.domain test
+    ```
+  </Step>
+  
+  <Step title="Access containers by name">
+    Now you can access containers by their name:
+    
+    ```bash
+    container run --name web nginx:latest
+    open http://web.test
+    ```
+  </Step>
+</Steps>
+
+<Info>
+  DNS domains simplify accessing containers by allowing you to use memorable names instead of IP addresses.
+</Info>
+
+<Warning>
+  Creating and deleting DNS domains requires administrator privileges because it modifies system DNS configuration.
+</Warning>

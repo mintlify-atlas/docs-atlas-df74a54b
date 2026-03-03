@@ -1,0 +1,43 @@
+---
+title: container builder status
+description: Show builder container status
+---
+
+Shows the current status of the BuildKit builder. Without flags a human-readable table is displayed; with `--format json` the status is returned as JSON.
+
+## Usage
+
+```bash
+container builder status [--format <format>] [--quiet] [--debug]
+```
+
+## Options
+
+<ParamField path="--format" type="string" default="table">
+  Format of the output (values: json, table)
+</ParamField>
+
+<ParamField path="-q, --quiet" type="boolean">
+  Only output the container ID
+</ParamField>
+
+<ParamField path="--debug" type="boolean">
+  Enable debug output
+</ParamField>
+
+## Examples
+
+```bash
+# Check builder status
+container builder status
+
+# Get builder status in JSON format
+container builder status --format json
+
+# Get only the builder container ID
+container builder status --quiet
+```
+
+<Info>
+  The builder container runs BuildKit and is automatically started when you run `container build` for the first time.
+</Info>
